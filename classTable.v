@@ -39,17 +39,17 @@ Module ClassTable (VarNameM FieldNameM MethodNameM ClassNameM: Typ)
 
   (* Parameter CT : list ClassDecl. *)
   (* Maybe change to method name? *)
-  Definition method : class -> MethDecl -> Prop :=
+  Definition method : ClassName -> MethDecl -> Prop :=
     fun _ _ => False.
 
-  Definition methods : class -> list MethDecl :=
+  Definition methods : ClassName -> list MethDecl :=
     fun _ => nil. 
   
-  Definition fld : class -> FieldName -> Prop :=
+  Definition fld : ClassName -> FieldName -> Prop :=
     fun _ _ => False.
   
-  Definition fields : ClassName -> list FieldName :=
-    fun _ => nil.
+  Definition fields : ClassName -> list FieldName -> Prop :=
+    fun _ _ => False.
 
 End ClassTable.
 

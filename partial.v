@@ -170,6 +170,10 @@ Module Update (T BT: Typ) (Import nc: Nice T).
                                     ~ In valT domain <-> func valT = None
                               }.
 
+  (*
+   * Creates new partial function in which everything in 'dom'
+   * has value 'val'.
+   *)
   Definition newPartFunc (dom: list A) (val: B) : PartFunc.
     set (func := fun a => match in_dec nc.eq_dec a dom with
                             | left _ => Some val
@@ -199,8 +203,48 @@ Module Update (T BT: Typ) (Import nc: Nice T).
     inversion H.
     intro.
     elim (n H0).
+  Defined.
+
+  Theorem newPartFuncDomain (dom: list A) (val: B) :
+    domain (newPartFunc dom val) = dom.
+    simpl.
+    auto.
   Qed.
-    
+
+  Theorem newPartFuncProp (dom: list A) (val: B) :
+    forall a: A,
+      (In a dom <-> func (newPartFunc dom val) a = Some val ) /\
+      ((~ In a dom) <-> func (newPartFunc dom val) a = None).
+    intros.
+    simpl.
+    split.
+    split.
+    intro.
+    case_eq (in_dec eq_dec a dom).
+    intros.
+    auto.
+    intros.
+    contradiction.
+    case_eq (in_dec eq_dec a dom).
+    intros.
+    auto.
+    intros.
+    discriminate H0.
+    split.
+    intro.
+    case_eq (in_dec eq_dec a dom).
+    intros.
+    contradiction.
+    intros.
+    auto.
+    intros.
+    case_eq (in_dec eq_dec a dom).
+    intros.
+    rewrite -> H0 in H.
+    discriminate.
+    intros.
+    auto.
+  Qed.
 
   Definition updateFunc (f: A -> option B) (tVal: A) (b: B) :  (A -> option B).
     intro.
