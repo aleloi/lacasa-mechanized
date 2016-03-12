@@ -1,78 +1,76 @@
 Require Import partial.
 Require Import namesAndTypes.
 
-        
-Module Syntax (ant: AbstractNamesAndTypes).
-       
-  Definition VarType := ant.VarNameM.t.
-  (* Everything is actually nat, but we abstract 
-   * away VarType to reduce confusion.
-   *)
-  Definition FieldName := ant.FieldNameM.t.
-  Definition MethodName := ant.MethodNameM.t.
-  Definition ClassName := ant.ClassNameM.t.
-  (* TODO: check what the article does! *)
+Import ConcreteEverything.
 
-  Inductive ExprOrTerm :=
-  | Null : ExprOrTerm
-  | Var : VarType -> ExprOrTerm
-  | FieldSelection : VarType -> FieldName -> ExprOrTerm
-  | FieldAssignment : VarType -> FieldName -> VarType -> ExprOrTerm
-  | MethodInvocation : VarType -> MethodName -> VarType -> ExprOrTerm
-  | New : ClassName -> ExprOrTerm
-  | Box : ClassName -> ExprOrTerm
 
-           (* x .open  y      =>    t *)
-  | Open : VarType -> VarType -> ExprOrTerm -> ExprOrTerm
-  | TLet : VarType -> ExprOrTerm -> ExprOrTerm -> ExprOrTerm.
+Inductive ExprOrTerm :=
+| Null : ExprOrTerm
+| Var : VarName_type -> ExprOrTerm
+| FieldSelection : VarName_type -> FieldName_type -> ExprOrTerm
+| FieldAssignment : VarName_type -> FieldName_type -> VarName_type -> ExprOrTerm
+| MethodInvocation : VarName_type -> MethodName_type -> VarName_type -> ExprOrTerm
+| New : ClassName_type -> ExprOrTerm
+| Box : ClassName_type -> ExprOrTerm
 
-  Notation "'t_let' x <- e 't_in' t" := (TLet x e t) (at level 0).
+(* x .open  y      =>    t *)
+| Open : VarName_type -> VarName_type -> ExprOrTerm -> ExprOrTerm
+| TLet : VarName_type -> ExprOrTerm -> ExprOrTerm -> ExprOrTerm.
 
-  Definition isExpr (e: ExprOrTerm) : Prop :=
-    match e with
-      | TLet _ _ _ => False
-      | _ => True      
-    end.
+Notation "'t_let' x <- e 't_in' t" := (TLet x e t) (at level 0).
 
-  Fixpoint isTerm (e: ExprOrTerm) : Prop :=
-    match e with
-      | Var _ => True
-      | TLet _ e t => isExpr e /\ isTerm t
-      | _ => False
-    end.
+Fixpoint isTerm (e: ExprOrTerm) : Prop :=
+  match e with
+    | Var _ => True
+    | TLet _ e t => (fix isExpr (e: ExprOrTerm) : Prop :=
+                       match e with
+                         | TLet _ _ _ => False
+                         | Open _ _ t' => isTerm t'
+                         | _ => True
+                       end
+                    ) e /\ isTerm t
+    | _ => False
+  end.
 
-  Inductive class :=
-  | AnyRef : class
-  | extends : ClassName -> class -> class.
+Definition isExpr (e: ExprOrTerm) : Prop :=
+  match e with
+    | TLet _ _ _ => False
+    | Open _ _ t => isTerm t
+    | _ => True
+  end.
 
-  Definition flds := list (FieldName * ClassName).
-  Definition varDefs := list (VarType * ClassName).
-  
-  Inductive ty :=
-  | simple : ClassName -> ty
-  | box : ClassName -> ty.
 
-  Record MethDecl : Type := mkMethodDecl {
-                           name: MethodName;
-                           argType: ty;
-                           argName: VarType;
-                           retType: ty;
-                           methodBody: ExprOrTerm;
-                           methodBodyIsTerm : isTerm methodBody
-                              }.
-                               
-  Record ClassDecl : Type := mkClassDecl {
-                                 cls: class;
-                                 fields: flds;
-                                 methods: list MethDecl 
-                               }.
+Inductive class :=
+| AnyRef : class
+| extends : ClassName_type -> class -> class.
 
-  Record Program : Type := mkProgram {
-                               classDecls : list ClassDecl;
-                               globals : list varDefs;
-                               programBody: ExprOrTerm;
-                               programBodyIsTerm : isTerm programBody
+Definition flds := list (FieldName_type * ClassName_type).
+Definition varDefs := list (VarName_type * ClassName_type).
+
+Inductive ty :=
+| simple : ClassName_type -> ty
+| box : ClassName_type -> ty.
+
+Record MethDecl : Type := mkMethodDecl {
+                              name: MethodName_type;
+                              argType: ty;
+                              argName: VarName_type;
+                              retType: ty;
+                              methodBody: ExprOrTerm;
+                              methodBodyIsTerm : isTerm methodBody
+                            }.
+
+Record ClassDecl : Type := mkClassDecl {
+                               cls: class;
+                               fields: flds;
+                               methods: list MethDecl 
                              }.
-  
-End Syntax.
+
+Record Program : Type := mkProgram {
+                             classDecls : list ClassDecl;
+                             globals : list varDefs;
+                             programBody: ExprOrTerm;
+                             programBodyIsTerm : isTerm programBody
+                           }.
+
 

@@ -1,50 +1,44 @@
 Require Import syntax.
 Require Import partial.
 Require Import namesAndTypes.
-Require Import Coq.Structures.Equalities.
 
-Module Type AbstractClassTable (ant: AbstractNamesAndTypes).
+Import ConcreteEverything.
 
-  Module syn := Syntax ant.
+Section MethodsAndFields.
+  Variable P : Program.
 
-  Parameter CT: list syn.ClassDecl.
-End AbstractClassTable.
-
-Module ConcreteClassTable  (ant: AbstractNamesAndTypes).
-  Module syn := Syntax ant.
-  Definition CT := @nil syn.ClassDecl.
-End ConcreteClassTable.  
-
-Module ClassTable (ant: AbstractNamesAndTypes) (act: AbstractClassTable ant).
-
+  Require Import Coq.Lists.List.
   
-  Import act.syn.
+(* Module MethodsAndFields (ct: ClassTable). *)
 
   (* Parameter CT : list ClassDecl. *)
   (* Maybe change to method name? *)
-  Definition method : ClassName -> MethDecl -> Prop :=
-    fun _ _ => False.
 
-  Definition methods : ClassName -> list MethDecl :=
-    fun _ => nil. 
-  
-  Definition fld : ClassName -> FieldName -> Prop :=
-    fun _ _ => False.
+  Definition method : ClassName_type -> MethDecl -> Prop :=
+    fun _ _ => classDecls P = nil.
+
+  Definition methods : ClassName_type -> list MethDecl :=
+    fun _ => match classDecls P with
+               | nil => nil
+               | _ => nil
+             end.
+
+  Definition fld : ClassName_type -> FieldName_type -> Prop :=
+    fun _ _ => classDecls P = nil.
 
   Definition ftype : forall C f,
-                       fld C f -> ClassName.
-    destruct (ant.fn.constructFresh nil).
-    auto.
-  Defined.
-  
-  Definition fields : ClassName -> list FieldName -> Prop :=
-    fun _ _ => False.
+                       fld C f -> ClassName_type :=
+    fun C _ _ => C.
+  (*   destruct (ant.fn.constructFresh nil). *)
+  (*   auto. *)
+  (* Defined. *)
 
-  Definition subclass : ClassName -> ClassName -> Prop :=
-    fun _ _ => False.
+  Definition fields : ClassName_type -> list FieldName_type -> Prop :=
+    fun _ _ => classDecls P = nil.
 
-End ClassTable.
+  Definition subclass : ClassName_type -> ClassName_type -> Prop :=
+    fun _ _ => classDecls P = nil.
+
+End MethodsAndFields.
 
 
-
-  

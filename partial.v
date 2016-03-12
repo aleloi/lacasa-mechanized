@@ -111,11 +111,11 @@ End infiniteNat.
 (*   Definition constructFresh := infiniteNat.constructFresh. *)
 (* End ConcretePartialFiniteInfiniteDomain. *)
 
-Inductive option (A: Type) :=
-| Some : A -> option A
-| None : option A.
-Arguments Some [A] _.
-Arguments None [A].
+(* Inductive option (A: Type) := *)
+(* | Some : A -> option A *)
+(* | None : option A. *)
+(* Arguments Some [A] _. *)
+(* Arguments None [A]. *)
 
 Theorem not_in_cons_impl (A: Type) (x a : A) (l : list A) :
   ~ In x (a :: l) <-> x <> a /\ ~ In x l.

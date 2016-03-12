@@ -3,38 +3,22 @@ Require Import partial.
 Require Import heap.
 Require Import classTable.
 Require Import sframe.
-Require Import Coq.Structures.Equalities.
+Require Import namesAndTypes.
 
-Module Reductions (VarNameM FieldNameM MethodNameM ClassNameM RefM: Typ)
-       (act: AbstractClassTable)
-       (v1: Nice VarNameM)
-       (v2: Nice FieldNameM)
-       (v3: Nice MethodNameM)
-       (v4: Nice ClassNameM)
-       (v5: Nice RefM).
+Import ConcreteEverything.
 
-  Module syn := Syntax VarNameM FieldNameM MethodNameM ClassNameM
-                        v1 v2 v3 v4.
-  Module hip := Heap FieldNameM ClassNameM RefM
-                     v2 v5.
+Section Reductions.
+  Parameter P : Program.
 
-  Module sfr := SFrame VarNameM FieldNameM MethodNameM ClassNameM RefM
-                       v1 v2 v3 v4 v5.
-  Import sfr.
-
-  Module ct := ClassTable VarNameM FieldNameM MethodNameM ClassNameM
-                          act v1 v2 v3 v4.
-
-  Import syn.
-  Import sfr.
-  Import hip.
-  Notation "( p +++ a --> b )" := (part_env.updatePartFunc
+  Notation "( p +++ a --> b )" := (p_env.updatePartFunc
                                      p a b) (at level 0).
 
-  Notation "( H +*+ o --> obj )" := (part_Heap.updatePartFunc
+  Notation "( H +*+ o --> obj )" := (p_heap.updatePartFunc
                                               H o obj)
                                       (at level 0).
-  Notation heapUpd := part_Heap.updatePartFunc.
+  Notation heapUpd := p_heap.updatePartFunc.
+
+  Notation fieldsP := (fields P).
 
   (* Notation "$$ C FM $$" := (obj C FM) (at level 201). *)
 
@@ -42,70 +26,74 @@ Module Reductions (VarNameM FieldNameM MethodNameM ClassNameM RefM: Typ)
   Import Coq.Lists.List.
   
 
-  Definition fm2env : refOrNull -> sfr.envRangeTy :=
-    fun (a: refOrNull) =>
+  Definition fm2env : FM_Range_type -> env_Range_type :=
+    fun (a: FM_Range_type) =>
       match a with
-        | null => sfr.envNull
-        | ref o => sfr.ref o
+        | FM_null => envNull
+        | FM_ref o => envRef o
       end.
 
-  Definition is_not_box (a: sfr.envRangeTy) : Prop :=
+  Definition is_not_box (a: env_Range_type) : Prop :=
     match a with
-      | sfr.envNull => True
-      | sfr.ref _ => True
-      | sfr.box _ => False
+      | envNull => True
+      | envRef _ => True
+      | envBox _ => False
     end.
 
-  Definition env2fm (envVal: sfr.envRangeTy) (witn: is_not_box envVal)
-  : refOrNull.
+  Definition env2fm (envVal: env_Range_type) (witn: is_not_box envVal)
+  : FM_Range_type.
     case_eq envVal.
     intro.
-    apply null.
+    apply FM_null.
     intros.
-    apply (ref r).
+    apply (FM_ref r).
     intros.
     unfold is_not_box in witn.
     rewrite -> H in witn.
     contradiction.
   Defined.
+
+  Print fields.
+
+  
   
   
   Inductive Reduction_SF :
-    sf_config -> sf_config -> Prop :=
+    sfconfig_ty -> sfconfig_ty -> Type :=
   | E_Var : forall x y t H L null_ref_box,
-              syn.isTerm t -> 
-              part_env.func L y = Some null_ref_box ->
+              isTerm t -> 
+              p_env.func L y = Some null_ref_box ->
               Reduction_SF ( # H , L , t_let x <- (Var y) t_in t ! )
-                        ( # H , (L +++ x --> null_ref_box) , t !)
+                        ( # H , (L +++ x --> null_ref_box) , t ! ) 
 
   | E_Null : forall x t H L,
-              syn.isTerm t -> 
+              isTerm t -> 
               Reduction_SF ( # H , L , t_let x <- Null t_in t ! )
                         ( # H , (L +++ x --> envNull) , t !)
 
   | E_New : forall C o x t H L FM flds,
-              syn.isTerm t ->
-              ~ In o (part_Heap.domain H) ->
-              ct.fields C flds ->
-              FM = hip.part_FM.newPartFunc flds null ->
+              isTerm t ->
+              ~ In o (p_heap.domain H) ->
+              fieldsP C flds ->
+              FM = p_FM.newPartFunc flds FM_null ->
               Reduction_SF ( # H , L , t_let x <- New C t_in t ! )
                         ( # (H +*+ o --> (obj C FM)),
-                          ( L +++ x --> sfr.ref o ) , t ! )
+                          ( L +++ x --> envRef o ) , t ! )
 
   | E_Box : forall C o x t H L FM flds,
-              syn.isTerm t ->
-              ~ In o (part_Heap.domain H) ->
-              ct.fields C flds ->
-              FM = hip.part_FM.newPartFunc flds null ->
+              isTerm t ->
+              ~ In o (p_heap.domain H) ->
+              fieldsP C flds ->
+              FM = p_FM.newPartFunc flds FM_null ->
               Reduction_SF ( # H , L , t_let x <- Box C t_in t ! )
                         ( # (H +*+ o --> (obj C FM)),
-                          ( L +++ x --> sfr.box o ) , t ! )
+                          ( L +++ x --> envBox o ) , t ! )
 
   | E_Field : forall x y o f t H L C FM fmVal,
-                syn.isTerm t ->
-                part_env.func L y = Some (sfr.ref o) ->
-                part_Heap.func H o = Some (obj C FM) ->
-                part_FM.func FM f = Some fmVal ->
+                isTerm t ->
+                p_env.func L y = Some (envRef o) ->
+                p_heap.func H o = Some (obj C FM) ->
+                p_FM.func FM f = Some fmVal ->
                 Reduction_SF ( # H , L , t_let x <- (FieldSelection y f) t_in t ! )
                         ( # H,
                           ( L +++ x --> (fm2env fmVal) ) , t ! )
@@ -116,13 +104,13 @@ Module Reductions (VarNameM FieldNameM MethodNameM ClassNameM RefM: Typ)
    *)
   | E_Assign : forall x y z o f t H L C FM envVal,
                  forall witn: is_not_box envVal, 
-                   syn.isTerm t ->
-                   part_env.func L y = Some (sfr.ref o) ->
-                   part_Heap.func H o = Some (obj C FM) ->
-                   In f (part_FM.domain FM) ->
-                   part_env.func L z = Some envVal ->
+                   isTerm t ->
+                   p_env.func L y = Some (envRef o) ->
+                   p_heap.func H o = Some (obj C FM) ->
+                   In f (p_FM.domain FM) ->
+                   p_env.func L z = Some envVal ->
                    Reduction_SF ( # H , L , t_let x <- (FieldAssignment y f z) t_in t ! )
-                             ( # (H +*+ o --> (obj C (part_FM.updatePartFunc
+                             ( # (H +*+ o --> (obj C (p_FM.updatePartFunc
                                                        FM f (env2fm envVal witn)
                                                     )
                                              )),
