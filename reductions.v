@@ -40,10 +40,7 @@ Module Reductions (VarNameM FieldNameM MethodNameM ClassNameM RefM: Typ)
 
   (* let x = y in t*)
   Import Coq.Lists.List.
-  Check ct.fields.
-  Check sfr.ref.
-
-  Check part_FM.func.
+  
 
   Definition fm2env : refOrNull -> sfr.envRangeTy :=
     fun (a: refOrNull) =>
@@ -71,7 +68,7 @@ Module Reductions (VarNameM FieldNameM MethodNameM ClassNameM RefM: Typ)
     rewrite -> H in witn.
     contradiction.
   Defined.
-  Print env2fm.
+  
   
   Inductive Reduction_SF :
     sf_config -> sf_config -> Prop :=
@@ -142,7 +139,7 @@ Module Reductions (VarNameM FieldNameM MethodNameM ClassNameM RefM: Typ)
 
   Notation cfg_ty := (prod Heap_ty FS_ty).
 
-  Print cons.
+  
 
   Definition updFrame (F: ann_F_ty) (x: VarType) (envVal: sfr.envRangeTy) :
     ann_F_ty.
@@ -153,7 +150,7 @@ Module Reductions (VarNameM FieldNameM MethodNameM ClassNameM RefM: Typ)
 
   Inductive Reduction_FS : cfg_ty -> cfg_ty -> Prop :=
 
-  |E_StackFrame : forall H H' L L' t t' FS a,
+  | E_StackFrame : forall H H' L L' t t' FS a,
                     Reduction_SF ( # H , L , t ! ) ( # H' , L' , t' ! )  ->
                     Reduction_FS (H, ((sframe L t, a) :: FS) )
                                  (H', (sframe L' t', a) :: FS )
@@ -165,26 +162,19 @@ Module Reductions (VarNameM FieldNameM MethodNameM ClassNameM RefM: Typ)
 
   | E_Return2 : forall H F FS,
                   Reduction_FS (H, (F, ann_epsilon) :: FS)
-                               (H, FS).
+                               (H, FS)
                                
-  (* | E_Open : forall H L x1 x2 y t1 t2 ann FS, *)
-  (*              isTerm t1 -> *)
-  (*              isTerm t2 -> *)
-  (*              part_env.func L x2 = Some (sfr.box o) -> *)
-  (*              In o (part_Heap.domain H) -> *)
-  (*              Reduction_FS (H, (sframe L *)
-  (*                                       ( t_let x1 <- (Open x2 y t1) t_in t2 ), *)
-  (*                                ann) :: FS) -> *)
-               
-  (*              Reduction_FS (H, *)
-  (*                            TODO FINISH HERE! *)
-  (*                            :: ((sframe ( L +++ x1 --> (sfr.box o) ) t2), *)
-  (*                                ann) :: FS). *)
-               
-
+  | E_Open : forall H L x1 x2 y t1 t2 ann FS o,
+               isTerm t1 ->
+               isTerm t2 ->
+               part_env.func L x2 = Some (sfr.box o) ->
+               In o (part_Heap.domain H) ->
+               Reduction_FS (H, (sframe L
+                                        ( t_let x1 <- (Open x2 y t1) t_in t2 ),
+                                 ann) :: FS)
+                            (H, (sframe (part_env.emptyPartFunc +++ y --> (sfr.box o) )  t1, ann_epsilon)
+                                  :: (sframe ( L +++ x1 --> (sfr.box o) ) t2,
+                                      ann) :: FS).
+  (* TODO: E_invoke *)
                             
-  
-  
-
 End Reductions.
-  

@@ -1,15 +1,12 @@
 Require Import syntax.
 Require Import partial.
 Require Import classTable.
-Require Import Coq.Structures.Equalities.
+(* Require Import Coq.Structures.Equalities. *)
 
 
-Module Heap (FieldNameM ClassNameM RefM: Typ)
-       (v2: Nice FieldNameM)
-       (* (v4: Nice ClassNameM) *)
-       (v5: Nice RefM).
+Module Heap (ant: AbstractNamesAndTypes).
 
-  Definition refType := RefM.t.
+  Definition refType := ant.RefM.t.
 
   (* Module syn := Syntax VarNameM FieldNameM MethodNameM ClassNameM *)
   (*                      v1 v2 v3 v4. *)

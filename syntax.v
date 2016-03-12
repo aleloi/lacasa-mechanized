@@ -1,20 +1,16 @@
 Require Import partial.
+Require Import namesAndTypes.
 
-Require Import Coq.Structures.Equalities.
         
-Module Syntax (VarNameM FieldNameM MethodNameM ClassNameM: Typ)
-       (v1: Nice VarNameM)
-       (v2: Nice FieldNameM)
-       (v3: Nice MethodNameM)
-       (v4: Nice ClassNameM).
+Module Syntax (ant: AbstractNamesAndTypes).
        
-  Definition VarType := VarNameM.t.
+  Definition VarType := ant.VarNameM.t.
   (* Everything is actually nat, but we abstract 
    * away VarType to reduce confusion.
    *)
-  Definition FieldName := FieldNameM.t.
-  Definition MethodName := MethodNameM.t.
-  Definition ClassName := ClassNameM.t.
+  Definition FieldName := ant.FieldNameM.t.
+  Definition MethodName := ant.MethodNameM.t.
+  Definition ClassName := ant.ClassNameM.t.
   (* TODO: check what the article does! *)
 
   Inductive ExprOrTerm :=

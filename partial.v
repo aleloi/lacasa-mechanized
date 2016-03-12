@@ -205,6 +205,24 @@ Module Update (T BT: Typ) (Import nc: Nice T).
     elim (n H0).
   Defined.
 
+  Definition emptyPartFunc : PartFunc.
+    apply (mkPartFunc (fun _ => None) nil).
+    intros.
+    split.
+    auto.
+    auto.
+  Defined.
+
+  Theorem emptyPartFuncProp :
+    forall a: A,
+      func emptyPartFunc a = None.
+    intro.
+    simpl.
+    auto.
+  Qed.
+
+  
+    
   Theorem newPartFuncDomain (dom: list A) (val: B) :
     domain (newPartFunc dom val) = dom.
     simpl.
@@ -348,6 +366,12 @@ Module Update (T BT: Typ) (Import nc: Nice T).
       ((a0 <> a) -> func (updatePartFunc p a b) a0 = func p a0).
     apply (updateFuncProp (func p) a b).
   Qed.
+
+  Fixpoint updateChainPartFunc (lst: list (prod A B)) : PartFunc :=
+    match lst with
+      | nil => emptyPartFunc
+      | (a, b) :: tail => updatePartFunc (updateChainPartFunc tail) a b
+    end.
 
 End Update.
 
