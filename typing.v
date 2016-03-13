@@ -4,94 +4,56 @@ Require Import heap.
 Require Import classTable.
 Require Import sframe.
 Require Import reductions.
-Require Import Coq.Structures.Equalities.
+Require Import namesAndTypes.
 
-Module Typing (VarNameM FieldNameM MethodNameM ClassNameM RefM: Typ)
-       (act: AbstractClassTable)
-       (v1: Nice VarNameM)
-       (v2: Nice FieldNameM)
-       (v3: Nice MethodNameM)
-       (v4: Nice ClassNameM)
-       (v5: Nice RefM).
-  
-  Module syn := Syntax VarNameM FieldNameM MethodNameM ClassNameM
-                        v1 v2 v3 v4.
-  (* Module hip := Heap FieldNameM ClassNameM RefM *)
-  (*                    v2 v5. *)
+Import ConcreteEverything.
 
-  Module sfr := SFrame VarNameM FieldNameM MethodNameM ClassNameM RefM
-                       v1 v2 v3 v4 v5.
-  Import sfr.
+Section Typing.
+  Parameter P: Program.
 
-  Module ct := ClassTable VarNameM FieldNameM MethodNameM ClassNameM
-                          act v1 v2 v3 v4.
-  (* Import ct. *)
+  Definition subtypeP := subtype P.
+  Definition fldP := fld P.
+  Definition ftypeP := ftype P.
 
-  Import syn.
-  (* Import hip. *)
-
-  Inductive typecheck_type :=
-  | class : ClassName -> typecheck_type
-  | box : ClassName -> typecheck_type
-  | all : typecheck_type.
-
-  Inductive effect :=
-  | eff_ocap : effect
-  | epsilon : effect.
-  
-  Module tyM <: Typ.
-    Definition t := typecheck_type.
-  End tyM.
-
-  Module part_gamma := Update VarNameM tyM v1.
-
-  Notation gamma_ty := part_gamma.PartFunc.
-
-  Inductive subtype : typecheck_type -> typecheck_type -> Prop :=
-  | classSub : forall C D, ct.subclass C D -> subtype (class C) (class D)
-  | boxSub : forall C D, ct.subclass C D -> subtype (box C) (box D)
-  | allSub : forall sigma, subtype sigma all.
-
-  Inductive TypeChecks : gamma_ty -> effect ->
-                         ExprOrTerm -> typecheck_type -> Prop :=
+  Inductive TypeChecks : Gamma_type -> effect ->
+                         ExprOrTerm -> typecheck_type -> Type :=
   | T_Null : forall gamma eff,
-               TypeChecks gamma eff Null all
+               TypeChecks gamma eff Null typt_all
                           
   | T_Var : forall gamma eff x sigma,
-              part_gamma.func gamma x = Some sigma ->
+              p_gamma.func gamma x = Some sigma ->
               TypeChecks gamma eff (Var x) sigma
 
   | T_Field : forall gamma eff x f C,
-              forall witn: ct.fld C f,
-                part_gamma.func gamma x = Some (class C) ->
+              forall witn: fldP C f,
+                p_gamma.func gamma x = Some (typt_class C) ->
                 TypeChecks gamma eff (FieldSelection x f)
-                           (class (ct.ftype C f witn))
+                           (typt_class (ftypeP C f witn))
 
   | T_Assign : forall gamma eff x f y C D,
-               forall witn: ct.fld C f,
-                 part_gamma.func gamma y = Some (class C) ->
-                 TypeChecks gamma eff (FieldSelection x f) (class D) ->
-                 subtype (class C) (class D) ->
-                 TypeChecks gamma eff (FieldAssignment x f y) (class C)
+               forall witn: fldP C f,
+                 p_gamma.func gamma y = Some (typt_class C) ->
+                 TypeChecks gamma eff (FieldSelection x f) (typt_class D) ->
+                 subtypeP (typt_class C) (typt_class D) ->
+                 TypeChecks gamma eff (FieldAssignment x f y) (typt_class C)
 
   (* TODO: Ocap! *)
   | T_New : forall gamma C eff,
-              TypeChecks gamma eff (New C) (class C)
+              TypeChecks gamma eff (New C) (typt_class C)
 
   | T_Open : forall gamma eff x C y t sigma,
-                      TypeChecks gamma eff (Var x) (box C) ->
-                      TypeChecks (part_gamma.updatePartFunc 
-                                    part_gamma.emptyPartFunc
-                                    y (class C)
+                      TypeChecks gamma eff (Var x) (typt_box C) ->
+                      TypeChecks (p_gamma.updatePartFunc 
+                                    p_gamma.emptyPartFunc
+                                    y (typt_class C)
                                  ) eff t sigma ->
-                      TypeChecks gamma eff (Open x y t) (box C)
+                      TypeChecks gamma eff (Open x y t) (typt_box C)
 
   | T_Let : forall gamma eff e sigma x tau t,
               TypeChecks gamma eff e sigma ->
-              TypeChecks (part_gamma.updatePartFunc gamma x sigma) eff
+              TypeChecks (p_gamma.updatePartFunc gamma x sigma) eff
                          t tau ->
               TypeChecks gamma eff (TLet x e t) tau.
-
 
   
 

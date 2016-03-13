@@ -5,37 +5,35 @@ Require Import classTable.
 Require Import sframe.
 Require Import reductions.
 Require Import typing.
-Require Import Coq.Structures.Equalities.
+Require Import namesAndTypes.
 
-Module Preservation (VarNameM FieldNameM MethodNameM ClassNameM RefM: Typ)
-       (act: AbstractClassTable)
-       (v1: Nice VarNameM)
-       (v2: Nice FieldNameM)
-       (v3: Nice MethodNameM)
-       (v4: Nice ClassNameM)
-       (v5: Nice RefM).
+Import ConcreteEverything.
 
+Section Preservation.
 
-  Module typ := Typing VarNameM FieldNameM MethodNameM ClassNameM RefM
-                       act v1 v2 v3 v4 v5.
-  Import typ.
+  Parameter P: Program.
 
-  Module reds := Reductions VarNameM FieldNameM MethodNameM ClassNameM RefM
-                           act v1 v2 v3 v4 v5.
-  Import reds.
+  Definition subtypeP := subtype P.
+  Definition fldP := fld P.
+  Definition ftypeP := ftype P.
 
-  Module sfr := SFrame VarNameM FieldNameM MethodNameM ClassNameM RefM
-                       v1 v2 v3 v4 v5.
-  Import sfr.
+  Print sigT.
 
-  
+  Print snd.
+  Print pair.
+
   Theorem preservation_light :
     forall gamma H H' L L' t t' sigma eff,
-      Reduction_SF ( reds.sfr.heap_sframe H (reds.sfr.sframe L t))
-                   ( reds.sfr.heap_sframe H' (reds.sfr.sframe L' t'))
+      Reduction_SF ( # H, L, t !)
+                   ( # H', L', t' !)
       ->
       TypeChecks gamma eff t sigma ->
-      {sig_gam  | TypeChecks (snd sig_gam) eff t' (fst sig_gam)}.
-  
-  
+      {sig_gam : prod typecheck_type Gamma_type  & TypeChecks (snd sig_gam) eff t' (fst sig_gam)}.
+    intros.
+    case_eq t; intros;  rewrite H0 in *  ;    clear H0 t; inversion X;
+    inversion X0;
+      exists (sigma , p_gamma.updatePartFunc gamma v sigma0); cbn;
+      rewrite H9 in *; auto.
+  Qed.
+
   

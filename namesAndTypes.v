@@ -74,7 +74,25 @@ Module NamesAndTypesAndOtherNames (ant: AbstractNamesAndTypes) .
                          ant.vn.
 
   Definition Env_type := p_env.PartFunc.
-    
+
+
+  Inductive typecheck_type :=
+  | typt_class : ClassName_type -> typecheck_type
+  | typt_box : ClassName_type -> typecheck_type
+  | typt_all : typecheck_type.
+
+  Inductive effect :=
+  | eff_ocap : effect
+  | eff_epsilon : effect.
+
+  Module tyM <: Typ.
+    Definition t := typecheck_type.
+  End tyM.
+
+  Module p_gamma := Update VarNameM tyM vn.
+
+  Notation Gamma_type := p_gamma.PartFunc.
+
 End NamesAndTypesAndOtherNames.
   
   

@@ -53,11 +53,7 @@ Section Reductions.
     contradiction.
   Defined.
 
-  Print fields.
-
-  
-  
-  
+    
   Inductive Reduction_SF :
     sfconfig_type -> sfconfig_type -> Type :=
   | E_Var : forall x y t H L null_ref_box,
@@ -125,8 +121,6 @@ Section Reductions.
 
   Notation cfg_type := (prod Heap_type FS_type).
 
-  
-
   Definition updFrame (F: ann_frame_type) (x: VarName_type) (envVal: env_Range_type) :
     ann_frame_type.
     destruct F.
@@ -142,25 +136,26 @@ Section Reductions.
                                  (H', (ann_frame (sframe L' t') a) :: FS )
 
   | E_Return1 : forall H L x y F FS envVal,
-                  part_env.func L x = Some envVal ->
-                  Reduction_FS (H, ((sframe L (Var x), ann_var y) :: F :: FS))
+                  p_env.func L x = Some envVal ->
+                  Reduction_FS (H, (ann_frame (sframe L (Var x)) (ann_var y)) :: F :: FS)
                                (H, updFrame F y envVal :: FS)
 
   | E_Return2 : forall H F FS,
-                  Reduction_FS (H, (F, ann_epsilon) :: FS)
+                  Reduction_FS (H, (ann_frame F ann_epsilon) :: FS)
                                (H, FS)
                                
   | E_Open : forall H L x1 x2 y t1 t2 ann FS o,
                isTerm t1 ->
                isTerm t2 ->
-               part_env.func L x2 = Some (sfr.box o) ->
-               In o (part_Heap.domain H) ->
-               Reduction_FS (H, (sframe L
-                                        ( t_let x1 <- (Open x2 y t1) t_in t2 ),
+               p_env.func L x2 = Some (envBox o) ->
+               In o (p_heap.domain H) ->
+               Reduction_FS (H, (ann_frame (sframe L
+                                        ( t_let x1 <- (Open x2 y t1) t_in t2 ))
                                  ann) :: FS)
-                            (H, (sframe (part_env.emptyPartFunc +++ y --> (sfr.box o) )  t1, ann_epsilon)
-                                  :: (sframe ( L +++ x1 --> (sfr.box o) ) t2,
-                                      ann) :: FS).
+                            (H, (ann_frame (sframe (p_env.emptyPartFunc +++ y --> (envBox o) )  t1)
+                                           ann_epsilon)
+                                  :: (ann_frame (sframe ( L +++ x1 --> (envBox o) ) t2)
+                                                ann) :: FS).
   (* TODO: E_invoke *)
                             
 End Reductions.

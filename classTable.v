@@ -39,6 +39,10 @@ Section MethodsAndFields.
   Definition subclass : ClassName_type -> ClassName_type -> Prop :=
     fun _ _ => classDecls P = nil.
 
-End MethodsAndFields.
+  Inductive subtype : typecheck_type -> typecheck_type -> Prop :=
+  | classSub : forall C D, subclass C D -> subtype (typt_class C) (typt_class D)
+  | boxSub : forall C D, subclass C D -> subtype (typt_box C) (typt_box D)
+  | allSub : forall sigma, subtype sigma typt_all.
 
+End MethodsAndFields.
 
