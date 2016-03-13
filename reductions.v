@@ -59,7 +59,7 @@ Section Reductions.
   
   
   Inductive Reduction_SF :
-    sfconfig_ty -> sfconfig_ty -> Type :=
+    sfconfig_type -> sfconfig_type -> Type :=
   | E_Var : forall x y t H L null_ref_box,
               isTerm t -> 
               p_env.func L y = Some null_ref_box ->
@@ -116,32 +116,30 @@ Section Reductions.
                                              )),
                                ( L +++ x --> envVal) , t ! ).
 
+  Inductive ann_frame_type :=
+  | ann_frame : sframe_type -> annotation_type -> ann_frame_type.
 
-  Inductive Annotation :=
-  | ann_epsilon : Annotation
-  | ann_var : VarType -> Annotation.
-  
-  Notation ann_F_ty := (prod sframe_ty Annotation).
-     
-  Notation FS_ty := (list ann_F_ty).
 
-  Notation cfg_ty := (prod Heap_ty FS_ty).
+       
+  Notation FS_type := (list ann_frame_type).
+
+  Notation cfg_type := (prod Heap_type FS_type).
 
   
 
-  Definition updFrame (F: ann_F_ty) (x: VarType) (envVal: sfr.envRangeTy) :
-    ann_F_ty.
+  Definition updFrame (F: ann_frame_type) (x: VarName_type) (envVal: env_Range_type) :
+    ann_frame_type.
     destruct F.
     destruct s.
-    exact (sframe ( p +++ x --> envVal ) e, a).
+    exact ( ann_frame (sframe ( e +++ x --> envVal ) e0) a).
   Defined.
 
-  Inductive Reduction_FS : cfg_ty -> cfg_ty -> Prop :=
+  Inductive Reduction_FS : cfg_type -> cfg_type -> Prop :=
 
   | E_StackFrame : forall H H' L L' t t' FS a,
                     Reduction_SF ( # H , L , t ! ) ( # H' , L' , t' ! )  ->
-                    Reduction_FS (H, ((sframe L t, a) :: FS) )
-                                 (H', (sframe L' t', a) :: FS )
+                    Reduction_FS (H, ( (ann_frame (sframe L t)  a) :: FS) )
+                                 (H', (ann_frame (sframe L' t') a) :: FS )
 
   | E_Return1 : forall H L x y F FS envVal,
                   part_env.func L x = Some envVal ->

@@ -29,6 +29,12 @@ Module NamesAndTypesAndOtherNames (ant: AbstractNamesAndTypes) .
   Definition MethodName_type := ant.MethodNameM.t.
   Definition ClassName_type := ant.ClassNameM.t.
   Definition Ref_type := ant.RefM.t.
+
+  
+  Inductive annotation_type :=
+  | ann_epsilon : annotation_type
+  | ann_var : VarName_type -> annotation_type.
+  
       
 
   Inductive FM_Range_type :=
