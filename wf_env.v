@@ -81,16 +81,8 @@ Section WF_Env.
 
   Import Coq.Lists.List.
 
-  Definition heap_typeof (H: Heap_type) (o: Ref_type)
-             (witn: In o (p_heap.domain H)) :
-    ClassName_type.
-    set (lem := proj2 (p_heap.fDomainCompat H o)).
-    case_eq (p_heap.func H o).
-    intros;    destruct b;    exact c.
-    intro is_none; set (is_absurd := lem is_none); auto.
-  Defined.
-
-  Parameter P: Program.
+  
+  Variable P: Program.
 
   
   Definition subtypeP := subtype P.

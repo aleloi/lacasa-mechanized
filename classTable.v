@@ -39,6 +39,16 @@ Section MethodsAndFields.
   Definition subclass : ClassName_type -> ClassName_type -> Prop :=
     fun _ _ => classDecls P = nil.
 
+  Theorem subclass_refl C :
+    subclass C C.
+    admit.
+  Admitted.
+    
+    Theorem subclass_trans C D E:
+    subclass C D -> subclass D E -> subclass C E.
+      admit.
+    Admitted.
+      
   Inductive subtype : typecheck_type -> typecheck_type -> Prop :=
   | classSub : forall C D, subclass C D -> subtype (typt_class C) (typt_class D)
   | boxSub : forall C D, subclass C D -> subtype (typt_box C) (typt_box D)

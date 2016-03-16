@@ -367,6 +367,13 @@ Module Update (T BT: Typ) (Import nc: Nice T).
     apply (updateFuncProp (func p) a b).
   Qed.
 
+  Theorem updatedFuncIn p a b :
+    In a (domain (updatePartFunc p a b)).
+    set (lem := in_dec eq_dec a (domain (updatePartFunc p a b))).
+    set (lem2 := proj1 (updatedFuncProp p a b a) (eq_refl a)).
+    firstorder.
+  Qed.
+
   Fixpoint updateChainPartFunc (lst: list (prod A B)) : PartFunc :=
     match lst with
       | nil => emptyPartFunc

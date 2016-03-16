@@ -1,25 +1,56 @@
-(* Require Import syntax. *)
+Require Import syntax.
 (* Require Import partial. *)
 Require Import namesAndTypes.
+Require Import classTable.
 
 Import ConcreteEverything.
 
+Section Heap.
+  Parameter P: Program.
+  Definition fieldsP := fields P.
+  Definition subclassP := subclass P.
+  Definition fldP := fld P.
+  Definition ftypeP := ftype P.
+  
 
-Definition fieldMap (rto: RTObject) : FM_type :=
-  match rto with
-    | obj _ FM => FM
-  end.
+  Definition fieldMap (rto: RTObject) : FM_type :=
+    match rto with
+      | obj _ FM => FM
+    end.
 
-Import Coq.Lists.List.
+  Import Coq.Lists.List.
 
-Definition fmPointsInside (H: Heap_type) (fm: FM_type) : Prop :=
-  forall f0: FieldName_type,
-  forall o: Ref_type,
-    p_FM.func fm f0 = Some (FM_ref o) ->
-    In o (p_heap.domain H).
+  Definition heap_typeof (H: Heap_type) (o: Ref_type)
+             (witn: In o (p_heap.domain H)) :
+    ClassName_type.
+    set (lem := proj2 (p_heap.fDomainCompat H o)).
+    case_eq (p_heap.func H o).
+    intros;    destruct b;    exact c.
+    intro is_none; set (is_absurd := lem is_none); auto.
+  Defined.
 
-Definition allPointInside (H: Heap_type) : Prop :=
-  forall o: Ref_type,
-  forall rto: RTObject,
-    p_heap.func H o = Some rto ->
-    fmPointsInside H (fieldMap rto).
+
+  (* Definition heap_type H o (o_witn: In o (p_heap.domain H)) : ClassName_type. *)
+  (*   set (lem := proj2 (p_heap.fDomainCompat H o)). *)
+  (*   case_eq (p_heap.func H o). *)
+  (*   intros. *)
+  (*   destruct b. *)
+  (*   exact c. *)
+  (*   intro is_none; elim ((lem is_none) o_witn). *)
+  (* Defined. *)
+
+  Definition Heap_obj_ok H C FM :=
+    forall f o,
+    forall f_witn : fldP C f, 
+      p_FM.func FM f = Some (FM_ref o) ->
+      { o_witn: In o (p_heap.domain H) &
+                subclassP (heap_typeof H o o_witn)
+                          (ftypeP C f f_witn)
+      }.
+
+  Definition Heap_ok H : Prop :=
+    forall o C FM,
+      p_heap.func H o = Some (obj C FM) ->
+      Heap_obj_ok H C FM.
+
+End Heap.

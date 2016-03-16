@@ -6,17 +6,21 @@ Require Import sframe.
 Require Import reductions.
 Require Import typing.
 Require Import namesAndTypes.
+
 Require Import wf_env.
 
 Import ConcreteEverything.
 
+
 Section Preservation.
 
-  Parameter P: Program.
+  Variable P: Program.
 
   Definition subtypeP := subtype P.
   Definition fldP := fld P.
   Definition ftypeP := ftype P.
+  Definition t_frame1' := t_frame1 P.
+  Definition WF_Frame' := WF_Frame P.
   
   Theorem preservation_light :
     forall gamma H H' L L' t t' sigma eff,
@@ -32,12 +36,19 @@ Section Preservation.
       rewrite H9 in *; auto.
   Qed.
 
+  Local Open Scope type_scope.
+
+  
+
   Theorem single_frame_WF_ENV_preservation :
     forall H H' L L' t t' sigma ann,
-      WF_Frame H (ann_frame (sframe L t) ann) sigma ->
+      WF_Frame' H (ann_frame (sframe L t) ann) sigma ->
+      Heap_ok H ->
       Reduction_SF ( # H, L, t !) ( # H', L', t' !) ->
-      WF_Frame H (ann_frame (sframe L' t') ann) sigma.
+      (WF_Frame' H' (ann_frame (sframe L' t') ann) sigma) *
+      (Heap_ok H').
     intros.
+    rename H0 into asm0.
     case_eq t; intros;   rewrite H0 in *  ;    clear H0 t;   inversion X0.
 
     rewrite <- H7 in *; clear H7 H1 H0.
@@ -62,7 +73,8 @@ Section Preservation.
     
     inversion X1.
     clear gamma H0 x0 H4 eff0 H1 t0 H6 H2 tau H5 e.
-    apply (t_frame1 H (p_gamma.updatePartFunc Gamma x sigma0) eff t
+    split.
+    apply (t_frame1' H (p_gamma.updatePartFunc Gamma x sigma0) eff t
                     (p_env.updatePartFunc L x null_ref_box) ann sigma H3).
     apply X4.
     split.
@@ -201,6 +213,8 @@ Section Preservation.
     set (lem'''':= proj2 (p_env.fDomainCompat L z ) H1).
     firstorder.
 
+    apply asm0.
+
     (* Case t = let y = Null in t' *)
     rewrite  H9 in *; clear H9 e0 t H6.
     rewrite <- H8 in *; clear H8.
@@ -212,6 +226,7 @@ Section Preservation.
     rename t' into t.
 
     rename X into asm1.
+    rename asm0 into asm2.
     rename X0 into asm0.
     clear H2 . 
 
@@ -231,7 +246,8 @@ Section Preservation.
 
     destruct _3_b as [_6_a _6_b].
 
-    apply (t_frame1 H (p_gamma.updatePartFunc Gamma x sigma' )
+    split.
+    apply (t_frame1' H (p_gamma.updatePartFunc Gamma x sigma' )
                     eff t
                     (p_env.updatePartFunc L x envNull) ann sigma).
     simpl in H6.
@@ -246,4 +262,216 @@ Section Preservation.
     intros z tau _8.
     elim (v_eq_dec x z).
     intro x_is_z; rewrite <- x_is_z in *; clear x_is_z.
+    (* assert (p_gamma.func (p_gamma.updatePartFunc Gamma x sigma') x = Some sigma') as _10_a. *)
+
+    (* exact (proj1 (p_gamma.updatedFuncProp Gamma  x sigma' x) (eq_refl x)). *)
+    (* rewrite -> _10_a in _8; inversion _8. rewrite <- H1 in *; clear H1 tau _8. *)
+    (* unfold WF_Var. *)
+    apply inl.
+    apply inl.
+    exact (proj1 (p_env.updatedFuncProp L  x  envNull x) (eq_refl x)).
+
+    intro x_neq_z. 
+    assert (p_gamma.func Gamma z = Some tau) as new_4_a.
+    rewrite <- _8.
+    symmetry.
+    apply (proj2 (p_gamma.updatedFuncProp Gamma x sigma' z)).
+    firstorder.
+    
+    (* set (new__4_d := _6_b z tau _4_a). *)
+    unfold WF_Var.
+    
+    (* rewrite H0. *)
+    
+
+    
+    (* Require Import Coq.Lists.List. *)
+    assert (In z (p_gamma.domain Gamma)) as new_4_ca.
+    set (lem := p_gamma.fDomainCompat Gamma z).
+    set (in_or_not := in_dec v_eq_dec z (p_gamma.domain Gamma)).
+    firstorder. rewrite H0 in new_4_a; discriminate.
+
+    set (lem''' := _6_a z new_4_ca).
+    case_eq (p_env.func L z).
+    intros envVar new__4_ca_ii.
+
+    assert (p_env.func (p_env.updatePartFunc L x envNull ) z = Some envVar) as new_4_cb.
+    transitivity (p_env.func L z).
+    apply p_env.updatedFuncProp. firstorder.
+    exact new__4_ca_ii.
+    set (new_4d := _6_b z tau new_4_a).
+    unfold WF_Var in new_4d.
+    rewrite new_4_cb in *.
+    rewrite new__4_ca_ii in *.
+    rewrite new_4_a in *.
+    rewrite _8.
+    exact new_4d.
+
+    intro.
+    set (lem'''':= proj2 (p_env.fDomainCompat L z ) H0).
+    firstorder.
+    exact asm2.
+
+
+
+    (* Case let v = new C in t *)
+    rename X0 into asm1.
+    rename X into asm2.
+    rename asm0 into asm3.
+
+    (* 1 *)
+
+    rewrite -> H9 in *; clear H9 e0.
+    rewrite <- H6 in *; clear H6 t'.
+    rewrite <- H8  in *; clear L' H8.
+    rewrite <- H7 in *; clear H7 H'.
+    rewrite <- H4 in *; clear e H4.
+    rewrite <- H3 in *; clear H3 v.
+    clear H2 L0 H0 H1.
+    rewrite H12 in *; clear H12.
+
+    (* 2 *)
+    inversion asm2.
+    rename X into _2_a.
+    rename X0 into _2_b.
+    clear H3 sigma0.
+    clear H6 ann0.
+    clear t0 H4 L0 H1 H0 H2.
+
+    (* 3 *)
+    inversion _2_b.
+    rename H0 into _3_a.
+    rename X into _3_b.
+
+    (* 4 *)
+    inversion _2_a.
+    clear tau H2 t0 H6 x0 H3 eff0 H1 gamma H0.
+    rename sigma0 into sigma'.
+    rename X0 into _4_b.
+    rename X into _4_a.
+    clear H4 e.
+
+
+    (* 5 *)
+    inversion _4_a.
+    clear H3 C0 eff0 H1 H0 gamma.
+    rewrite <- H2 in *; clear H2.
+
+    (* section between 5, 6 let's call it half_6 *)
+    (* This is not in the same order on paper *)
+    split.
+    apply ( t_frame1' _
+                     (p_gamma.updatePartFunc Gamma x (typt_class C))
+                     eff _ _ ann sigma).
+    exact H5.
+    exact _4_b.
+    assert (gamma_env_subset (p_gamma.updatePartFunc Gamma x (typt_class C))
+     (p_env.updatePartFunc L x (envRef o))) as _7.
+    exact (subset_preserved Gamma L x sigma' envNull _3_a). (* actually, 7 *)
+    split. exact _7.
+    intros z tau.
+    case_eq (v_eq_dec x z).
+    intro x_is_z; rewrite <- x_is_z in *; clear x_is_z z.
+    intro dummy; clear dummy.
+    (* Section half 6 on paper here somewhere *)
+    intro half_6.
+    set (half_6_a_i := proj1 (p_env.updatedFuncProp L x (envRef o) x) (eq_refl _)).
+    assert (In o (p_heap.domain (p_heap.updatePartFunc H o (obj C (p_FM.newPartFunc flds FM_null)))))
+      as o_witn.
+    apply p_heap.updatedFuncIn.
+    set (H'o := proj1 (p_heap.updatedFuncProp H o (obj C (p_FM.newPartFunc flds FM_null)) o)
+                      (eq_refl _)).
+    assert ((heap_typeof
+               (p_heap.updatePartFunc H o
+                                      (obj C (p_FM.newPartFunc flds FM_null)))
+               o o_witn) = C) as half_6_a_ii_first.
+    unfold heap_typeof.
+    rewrite H'o.
+    reflexivity.
+
+    
+    assert (subtypeP ( typt_class (heap_typeof
+                                     (p_heap.updatePartFunc H o
+                                                            (obj C (p_FM.newPartFunc flds FM_null)))
+                                     o o_witn)) (typt_class C)) as half_6_a_ii.
+    rewrite half_6_a_ii_first.
+    unfold subtypeP.
+    apply classSub.
+    apply subclass_refl. (* admitted (actually not defined) *)
+    set (lem := proj1 (p_gamma.updatedFuncProp Gamma x (typt_class C) x) (eq_refl _)).
+    rewrite half_6 in lem.
+    inversion lem.
+    rewrite H1 in *; clear lem H1 tau.
+    rename half_6 into half_6_a_iii.
+    apply inl. apply inr. exists (C, o).
+    exists o_witn.
+    split.
+    exact half_6_a_i.
+    split.
+    exact half_6_a_iii.
+    exact half_6_a_ii.
+
+    (* 6 [THIS IS #4 from E-Null]*)
+    intros _6_neq dummy _6.
+
+    assert (p_gamma.func Gamma z = Some tau) as new_4_a.
+    rewrite <- _6.
+    symmetry.
+    apply (proj2 (p_gamma.updatedFuncProp Gamma x (typt_class C) z)).
+    firstorder.
+    
+    (* set (new__4_d := _6_b z tau _4_a). *)
+    unfold WF_Var.
+    
+    (* rewrite H0. *)
+    
+
+    
+    (* Require Import Coq.Lists.List. *)
+    assert (In z (p_gamma.domain Gamma)) as new_4_ca.
+    set (lem := p_gamma.fDomainCompat Gamma z).
+    set (in_or_not := in_dec v_eq_dec z (p_gamma.domain Gamma)).
+    firstorder. rewrite H0 in new_4_a; discriminate.
+
+    set (lem''' := _3_a z new_4_ca).
+    case_eq (p_env.func L z).
+    intros envVar new__4_ca_ii.
+
+    assert (p_env.func (p_env.updatePartFunc L x (envRef o) ) z = Some envVar) as new_4_cb.
+    transitivity (p_env.func L z).
+    apply p_env.updatedFuncProp. firstorder.
+    exact new__4_ca_ii.
+    set (new_4d := _3_b z tau new_4_a).
+    unfold WF_Var in new_4d.
+    rewrite new_4_cb in *.
+    rewrite new__4_ca_ii in *.
+    rewrite new_4_a in *.
+    rewrite _6.
+    destruct new_4d.
+    destruct s.
+    apply inl. apply inl.
+    exact e.
+    apply inl. apply inr.
+    destruct s.
+    destruct x0.
+    exists (c, r).
+    destruct y.
+    TODO FINISH!!!
+    intro.
+    set (lem'''':= proj2 (p_env.fDomainCompat L z ) H0).
+    firstorder.
+    
+    
+        
+    (* Section half_6 from paper: *)
+    
+    assert (p_env.updatePartFunc L x (envRef o) )
+    
+    
+                     Gamma eff t L ann sigma,)
+    
+    set (_2_A := t)
+    
+    
+    
     
