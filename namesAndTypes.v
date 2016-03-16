@@ -29,6 +29,11 @@ Module NamesAndTypesAndOtherNames (ant: AbstractNamesAndTypes) .
   Definition MethodName_type := ant.MethodNameM.t.
   Definition ClassName_type := ant.ClassNameM.t.
   Definition Ref_type := ant.RefM.t.
+  Definition v_eq_dec := ant.vn.eq_dec.
+  Definition fn_eq_dec := ant.vn.eq_dec.
+  Definition mn_eq_dec := ant.mn.eq_dec.
+  Definition cn_eq_dec := ant.cn.eq_dec.
+  Definition rn_eq_dec := ant.rn.eq_dec.
 
   
   Inductive annotation_type :=
