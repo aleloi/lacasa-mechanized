@@ -130,30 +130,31 @@ Section Preservation.
     apply p_gamma.updatedFuncProp; apply eq_refl.
     auto.
 
-    induction b; destruct x2; induction p; destruct p; destruct H2.
+    destruct b; destruct x2; destruct y0; destruct a; destruct H2.
+    (* induction b; destruct x2; induction p; destruct p; destruct H2. *)
 
     rewrite (_3_b_i_A) in *; inversion H1.
     (* destruct H2. *)
-    rewrite ->  H8 in *.
-    clear o H8.
-    rename r into o. (* it couldn't do it directly *)
-    rename c into C'.
-    clear H1.
+    (* rewrite ->  H8 in *. *)
+    (* clear o H8. *)
+    (* rename r into o. (* it couldn't do it directly *) *)
+    (* rename c into C'. *)
+    (* clear H1. *)
 
-    apply inr.
-    exists (C', o).
-    exists x2.
-    split.
-    apply p_env.updatedFuncProp; apply eq_refl.
-    split.
+    (* apply inr. *)
+    (* exists (C', o). *)
+    (* exists x2. *)
+    (* split. *)
+    (* apply p_env.updatedFuncProp; apply eq_refl. *)
+    (* split. *)
 
-    set (lem := proj1 (p_gamma.updatedFuncProp gamma  x sigma0 x) (eq_refl x)).
-    rewrite lem in H0; inversion H0. rewrite H6 in *.
-    rename sigma1 into sigma'; clear  H6 H0.
-    rewrite H2 in H5; inversion H5; rewrite <- H1 in *.
-    clear H1 H5.
-    exact lem.
-    exact H4.
+    (* set (lem := proj1 (p_gamma.updatedFuncProp gamma  x sigma0 x) (eq_refl x)). *)
+    (* rewrite lem in H0; inversion H0. rewrite H6 in *. *)
+    (* rename sigma1 into sigma'; clear  H6 H0. *)
+    (* rewrite H2 in H5; inversion H5; rewrite <- H1 in *. *)
+    (* clear H1 H5. *)
+    (* exact lem. *)
+    (* exact H4. *)
 
     (* 3 c, L(y) = b(o)*)
     rename H10 into _3_c.
@@ -178,8 +179,36 @@ Section Preservation.
     rewrite _3_c in H1; inversion H1.
     rename x0 into z.
     rename sigma1 into tau.
+    
+    (* intro. *)
+    (* 3 box *)
+    rewrite  H6 in *. clear H6 o. rename r into o.
+    clear H1.
+    unfold WF_Var.
+    rewrite H0.
+    apply inr.
+    exists (c, o).
+    exists x2.
+    split.
+    simpl.
+    exact (proj1 (p_env.updatedFuncProp L x (envBox o) x) (eq_refl _)).
+    split.
+    simpl in H0.
+    rewrite _1_b in H2.
+    inversion H2.
+    rewrite H5 in *.
+    set (lem := (proj1 (p_gamma.updatedFuncProp gamma x (typt_box c) x) (eq_refl _))).
+    simpl in lem.
+    rewrite lem in H0.
+    inversion H0.
+    f_equal.
+    exact H4.
+    
+    (* 4 *)
     intro.
-
+    rename x0 into z.
+    rename sigma1 into tau.
+    rename sigma0 into sigma'.
     assert (p_gamma.func Gamma z = Some tau) as _4_a.
     rewrite <- H0.
     symmetry.
@@ -411,43 +440,126 @@ Section Preservation.
     exact half_6_a_iii.
     exact half_6_a_ii.
 
-    (* 6 [THIS IS #4 from E-Null]*)
-    intros _6_neq dummy _6.
-
-    assert (p_gamma.func Gamma z = Some tau) as new_4_a.
-    rewrite <- _6.
+    (* 6 [THIS starts like #4 from E-Null]*)
+    
+    intros _6_c dummy _6_a.
+    clear dummy.
+    
+        
+    assert (p_gamma.func Gamma z = Some tau) as e_vi.
+    rewrite <- _6_a.
     symmetry.
     apply (proj2 (p_gamma.updatedFuncProp Gamma x (typt_class C) z)).
     firstorder.
     
     (* set (new__4_d := _6_b z tau _4_a). *)
-    unfold WF_Var.
+    (* unfold WF_Var. *)
     
     (* rewrite H0. *)
     
 
     
     (* Require Import Coq.Lists.List. *)
-    assert (In z (p_gamma.domain Gamma)) as new_4_ca.
+    assert (In z (p_gamma.domain Gamma)) as z_in_dom_Gamma.
     set (lem := p_gamma.fDomainCompat Gamma z).
     set (in_or_not := in_dec v_eq_dec z (p_gamma.domain Gamma)).
-    firstorder. rewrite H0 in new_4_a; discriminate.
+    firstorder. rewrite H0 in e_vi; discriminate.
 
-    set (lem''' := _3_a z new_4_ca).
+    
+
+    set (z_in_dom_L := _3_a z z_in_dom_Gamma).
     case_eq (p_env.func L z).
-    intros envVar new__4_ca_ii.
-
-    assert (p_env.func (p_env.updatePartFunc L x (envRef o) ) z = Some envVar) as new_4_cb.
+    intros envVar L_z_val.
+    assert (p_env.func (p_env.updatePartFunc L x (envRef o) ) z = Some envVar) as _6_bb.
     transitivity (p_env.func L z).
     apply p_env.updatedFuncProp. firstorder.
-    exact new__4_ca_ii.
+    exact L_z_val.
+
+    destruct envVar.
+
+    (* 6 d *)
+    apply inl. apply inl.
+    exact _6_bb.
+
+    (* 6 e *)
+
+    rename r into o'.
+
+    assert ({ C | {witn |
+             p_env.func L z = Some (envRef o') /\
+             p_gamma.func Gamma z = Some (typt_class C) /\
+             subtypeP (typt_class (heap_typeof H o' witn)) (typt_class C)
+            }}).
+    elim (_3_b z tau e_vi).
+    intro.
+    destruct a.
+    rewrite -> e in L_z_val; discriminate.
+    destruct s.
+    destruct x0.
+    destruct y.
+    destruct a.
+    destruct H1.
+    rewrite L_z_val in H0.
+    inversion H0.
+    rewrite H4 in *; clear H4 o'; rename r into o'.
+    clear H0.
+    rewrite e_vi in H1.
+    inversion H1. rewrite -> H3 in *.
+    clear H3 tau H1.
+    exists c. exists x0.
+    split.
+    exact L_z_val.
+    split.
+    exact e_vi.
+    exact H2.
+
+    intro.
+    destruct b. destruct x0. destruct y. destruct a. destruct H1.
+    rewrite  öäåäö
+    
+    rewrite L_z_val in H0.
+    
+    
+    
     set (new_4d := _3_b z tau new_4_a).
     unfold WF_Var in new_4d.
     rewrite new_4_cb in *.
     rewrite new__4_ca_ii in *.
     rewrite new_4_a in *.
     rewrite _6.
+
+    (* 6 a *)
+    induction envVar.
+    
+    apply inl. apply inl. reflexivity.
+    case_eq (rn_eq_dec r o).
+    intros r_o_eq dummy'. clear dummy' dummy.
+    rewrite r_o_eq in *.
+    
+    set (lemm := proj1 (p_heap.updatedFuncProp H o (obj C (p_FM.newPartFunc flds FM_null)) o)
+                         (eq_refl _)
+            ).
+    
     destruct new_4d.
+    destruct s.
+    inversion e.
+    destruct s.
+    destruct x0.
+    destruct y.
+    destruct a.
+    inversion H0.
+    rewrite -> H3 in *.
+    clear o H3.
+    rename r0 into o.
+    clear r_o_eq r.
+    clear H0.
+    destruct H1.
+    inversion H0.
+    rewrite -> H3 in *.
+    clear H3 tau.
+    clear H0.
+    
+    
     destruct s.
     apply inl. apply inl.
     exact e.

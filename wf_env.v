@@ -103,7 +103,7 @@ Section WF_Env.
     {C_o |
      match C_o with
        | (C, o) => {witn |
-                    p_env.func L x = Some (envRef o) /\
+                    p_env.func L x = Some (envBox o) /\
                     p_gamma.func Gamma x = Some (typt_box C) /\
                     subtypeP (typt_class (heap_typeof H o witn)) (typt_class C)
                    }

@@ -380,6 +380,9 @@ Module Update (T BT: Typ) (Import nc: Nice T).
       | (a, b) :: tail => updatePartFunc (updateChainPartFunc tail) a b
     end.
 
+  (* Theorem freshProp p a b (fresh_witn : ~ In a (domain p)) : *)
+  (*   forall  *)
+
 End Update.
 
 (* Print Update. *)
