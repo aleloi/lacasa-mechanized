@@ -40,27 +40,25 @@ Section Preservation.
     intros.
     case_eq t; intros;   rewrite H0 in *  ;    clear H0 t;   inversion X0.
 
-    inversion X0.
-    rewrite <- H18 in *; clear H18 H12 H7 H1.
-    rewrite <- H19 in *; clear H19 H13 H2.
-    rewrite <- H6 in *; rewrite <- H9 in *. clear H20 H17 H9 H6.
-    clear H14.
-    rewrite <- H5 in *.
-    inversion H16.
-    rewrite H2 in *; clear H2 H16 H5.
-    rewrite <- H4 in *.
-    clear H15 H4 v.
-    clear L1 H11 t0 y0 x0.
-    assert (Some null_ref_box0 = Some null_ref_box). transitivity (p_env.func L y).
-    auto. auto.
-    inversion H1.
-    rewrite H4 in *.
-    clear H4 H1 H8 H21 null_ref_box0.
+    rewrite <- H7 in *; clear H7 H1 H0.
+    rewrite <- H8 in *; clear H2 L0 H8.
+    rewrite <- H6 in *; rewrite <- H9 in *; clear  H9 H6.
+    rewrite <- H5 in *; clear H5.
+    rewrite <- H4 in *; clear H4.
+
+    (* inversion H16. *)
+    (* rewrite H2 in *; clear H2 H16 H5. *)
+    (* rewrite <- H4 in *. *)
+    (* clear H15 H4 v. *)
+    (* clear L1 H11 t0 y0 x0. *)
+    (* assert (Some null_ref_box0 = Some null_ref_box). transitivity (p_env.func L y). *)
+    (* auto. auto. *)
+    (* inversion H1. *)
+    (* rewrite H4 in *. *)
+    (* clear H4 H1 H8 H21 null_ref_box0. *)
 
     inversion X.
-    clear H6 t0. clear H4 H1. clear L1 H2.
-    clear ann0 sigma0 H7 H5.
-    clear H' t' e0 e L' H0.
+    clear H5 t0. clear H4 H1 H2 H6 L0 ann0 sigma0 H0. 
     
     inversion X1.
     clear gamma H0 x0 H4 eff0 H1 t0 H6 H2 tau H5 e.
@@ -124,8 +122,8 @@ Section Preservation.
 
     rewrite (_3_b_i_A) in *; inversion H1.
     (* destruct H2. *)
-    rewrite ->  H7 in *.
-    clear o H7.
+    rewrite ->  H8 in *.
+    clear o H8.
     rename r into o. (* it couldn't do it directly *)
     rename c into C'.
     clear H1.
@@ -174,32 +172,78 @@ Section Preservation.
     rewrite <- H0.
     symmetry.
     apply p_gamma.updatedFuncProp. firstorder.
-    TODO: finish here!
-    (* assert (p_gamma.func Gamma z = Some tau) as _4_a. *)
+
+    destruct X2 as [ _4_c_i _4_c_ii].
+    set (_4_d := _4_c_ii z tau _4_a).
+    unfold WF_Var.
+    rewrite H0.
+    Require Import Coq.Lists.List.
+    assert (In z (p_gamma.domain Gamma)) as _4_ca.
+    set (lem := p_gamma.fDomainCompat Gamma z).
+    set (in_or_not := in_dec v_eq_dec z (p_gamma.domain Gamma)).
+    firstorder; rewrite H1 in _4_a; discriminate.
+
+    set (lem''' := _4_c_i z _4_ca).
+    case_eq (p_env.func L z).
+    intros envVar _4_ca_ii.
+
+    assert (p_env.func (p_env.updatePartFunc L x null_ref_box ) z = Some envVar) as _4_cb.
+    transitivity (p_env.func L z).
+    apply p_env.updatedFuncProp. firstorder.
+    exact _4_ca_ii.
+    unfold WF_Var in _4_d.
+    rewrite _4_cb in *.
+    rewrite _4_ca_ii in _4_d.
+    rewrite _4_a in _4_d.
+    exact _4_d.
+
+    intro.
+    set (lem'''':= proj2 (p_env.fDomainCompat L z ) H1).
+    firstorder.
+
+    (* Case t = let y = Null in t' *)
+    rewrite  H9 in *; clear H9 e0 t H6.
+    rewrite <- H8 in *; clear H8.
+    rewrite <- H7 in *; clear H7 H'.
+    rewrite <- H5 in *; clear e H5.
+    rewrite <- H4 in *; clear H4.
+    clear H3 H1 L0 H0.
+    clear L'.
+    rename t' into t.
+
+    rename X into asm1.
+    rename X0 into asm0.
+    clear H2 . 
+
+    clear v.
+
+    inversion asm1.
+    clear sigma0 ann0 H3 H5 t0 H4 H1 L0 H0 H2.
+
+    rename X0 into _3_b.
+    rename X into _3_a.
+    inversion _3_a.
+
+    clear H2 tau t0 H5 e H4 x0 H3 eff0 H1 H0 gamma.
+    rename sigma0 into sigma'.
+    rename X into _4_a.
+    rename X0 into _4_b.
+
+    destruct _3_b as [_6_a _6_b].
+
+    apply (t_frame1 H (p_gamma.updatePartFunc Gamma x sigma' )
+                    eff t
+                    (p_env.updatePartFunc L x envNull) ann sigma).
+    simpl in H6.
+    exact  (proj2 H6).
+    exact _4_b.
+
+    unfold WF_Env.
+    split.
     
+    exact (subset_preserved Gamma L x sigma' envNull _6_a).
+
+    intros z tau _8.
+    elim (v_eq_dec x z).
+    intro x_is_z; rewrite <- x_is_z in *; clear x_is_z.
     
-    (* destruct b; destruct x2. destruct y0; destruct a; destruct H2. *)
-    (* rewrite _1_b in H2; inversion H2. *)
-    (* rewrite  H6 in *. *)
-    (* clear H2. *)
-    (* assert (p_gamma.func gamma y = Some (typt_box c)). *)
-    (* transitivity (Some sigma'). auto. *)
-    (* f_equal. auto. *)
-    (* rename H2 into _1_b'. *)
-    (* set (_3_c_ii' := _3_c_i_B y (typt_box c) _1_b'). *)
-    (* clear _3_c_ii _1_b. *)
-    (* rename _1_b' into _3_c_vi_A. *)
-    (* rename H4 into _3_c_vi_B. *)
-    (* rename _3_c_ii' into _3_c_ii. *)
-    (* clear H6 sigma'. *)
-    (* rewrite _3_c in H1. *)
-    
-    
-    
-    set (_1_b' := )
-    rewrite H6 in _3_c_ii.
-    
-    rewrite <- H7 in *.
-    set (test := _3_c_i_B x )
-    apply p_gamma.updatedFuncProp; apply eq_refl.
-    auto.
