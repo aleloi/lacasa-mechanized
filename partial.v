@@ -383,6 +383,21 @@ Module Update (T BT: Typ) (Import nc: Nice T).
   (* Theorem freshProp p a b (fresh_witn : ~ In a (domain p)) : *)
   (*   forall  *)
 
+  Theorem staysInDomain p a b x :
+    In x (domain p) -> In x (domain (updatePartFunc p a b)).
+    intro.
+    case_eq (in_dec eq_dec x (domain (updatePartFunc p a b))).
+    intros; exact i.
+    intros.
+    simpl.
+    elim  (eq_dec a x).
+    intro.
+    left.
+    exact a0.
+    intro.
+    right.
+    exact H.
+  Qed.
 End Update.
 
 (* Print Update. *)

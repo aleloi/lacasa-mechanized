@@ -515,12 +515,34 @@ Section Preservation.
 
     intro.
     destruct b. destruct x0. destruct y. destruct a. destruct H1.
-    rewrite  öäåäö
-    
+    exists c.
     rewrite L_z_val in H0.
+    inversion H0.
+    destruct X. destruct s. destruct a. destruct H1.
+    clear H0.
+    rename x0 into C'.
+    rename x1 into o'_witness.
+
+    apply inl. apply inr.
+    exists (C', o').
+    exists (p_heap.staysInDomain H o (obj C (p_FM.newPartFunc flds FM_null)) o' o'_witness).
+    split.
+    exact _6_bb.
+    split.
+    rewrite <- H1.
+    apply (p_gamma.updatedFuncProp). firstorder.
+    
+    TODO finish here!
+    intros.
+    exact i.
+    intros not_in dummy; clear dummy.
+    set (H'o'_is_none := proj1 ((p_heap.fDomainCompat 
+                    (p_heap.updatePartFunc H o (obj C (p_FM.newPartFunc flds FM_null)))
+                                ) o' ) not_in).
+
     
     
-    
+           
     set (new_4d := _3_b z tau new_4_a).
     unfold WF_Var in new_4d.
     rewrite new_4_cb in *.
