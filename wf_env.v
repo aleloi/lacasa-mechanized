@@ -83,9 +83,10 @@ Section WF_Env.
 
   
   Variable P: Program.
-
   
   Definition subtypeP := subtype P.
+
+  Definition TypeChecksP := TypeChecks P.
 
   Local Open Scope type_scope.
 
@@ -115,10 +116,12 @@ Section WF_Env.
       p_gamma.func Gamma x = Some sigma ->
       WF_Var H Gamma L x.
 
+  
+
   Inductive WF_Frame : Heap_type -> ann_frame_type -> typecheck_type -> Type :=
   | t_frame1 : forall H Gamma eff t L ann sigma,
                 isTerm t ->
-                TypeChecks Gamma eff t sigma ->
+                TypeChecksP Gamma eff t sigma ->
                 WF_Env H Gamma L ->
                 WF_Frame H (ann_frame (sframe L t) ann) sigma.
 End WF_Env.

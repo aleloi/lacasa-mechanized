@@ -8,7 +8,7 @@ Require Import namesAndTypes.
 Import ConcreteEverything.
 
 Section Reductions.
-  Parameter P : Program.
+  Variable P : Program.
 
   Notation "( p +++ a --> b )" := (p_env.updatePartFunc
                                      p a b) (at level 0).

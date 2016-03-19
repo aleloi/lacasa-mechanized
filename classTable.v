@@ -44,11 +44,29 @@ Section MethodsAndFields.
     admit.
   Admitted.
     
-    Theorem subclass_trans C D E:
+  Theorem subclass_trans C D E:
     subclass C D -> subclass D E -> subclass C E.
-      admit.
-    Admitted.
-      
+    admit.
+  Admitted.
+
+  Theorem field_subclass C D f :
+    fld D f ->
+    subclass C D ->
+    fld C f.
+    admit.
+  Admitted.
+    
+  Theorem ftype_subclass C D f (f_witn: fld D f)
+          (sub_witn: subclass C D):
+    ftype D f f_witn = ftype C f (field_subclass C D f f_witn sub_witn).
+    admit.
+  Admitted.
+
+  Theorem unique_ftype C f (f_witn1 f_witn2: fld C f) :
+    ftype C f f_witn1 = ftype C f f_witn2.
+    admit.
+  Admitted.
+    
   Inductive subtype : typecheck_type -> typecheck_type -> Prop :=
   | classSub : forall C D, subclass C D -> subtype (typt_class C) (typt_class D)
   | boxSub : forall C D, subclass C D -> subtype (typt_box C) (typt_box D)

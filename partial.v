@@ -398,6 +398,17 @@ Module Update (T BT: Typ) (Import nc: Nice T).
     right.
     exact H.
   Qed.
+
+  Lemma in_part_func_domain p a b :
+    func p a = Some b ->
+    In a (domain p).
+    intros.
+    set (lem := fDomainCompat p a).
+    set (lem' := in_dec eq_dec a (domain p)).
+    firstorder.
+    rewrite H0 in H; discriminate H.
+  Qed.    
+    
 End Update.
 
 (* Print Update. *)

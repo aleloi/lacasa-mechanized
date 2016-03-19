@@ -9,7 +9,7 @@ Require Import namesAndTypes.
 Import ConcreteEverything.
 
 Section Typing.
-  Parameter P: Program.
+  Variable P: Program.
 
   Definition subtypeP := subtype P.
   Definition fldP := fld P.

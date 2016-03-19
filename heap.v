@@ -6,7 +6,7 @@ Require Import classTable.
 Import ConcreteEverything.
 
 Section Heap.
-  Parameter P: Program.
+  Variable P: Program.
   Definition fieldsP := fields P.
   Definition subclassP := subclass P.
   Definition fldP := fld P.
