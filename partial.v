@@ -380,9 +380,24 @@ Module Update (T BT: Typ) (Import nc: Nice T).
       | (a, b) :: tail => updatePartFunc (updateChainPartFunc tail) a b
     end.
 
-  (* Theorem freshProp p a b (fresh_witn : ~ In a (domain p)) : *)
-  (*   forall  *)
-
+  Theorem freshProp p a b (fresh_witn : ~ In a (domain p)) :
+    forall a',
+      In a' (domain p) -> func p a' = func (updatePartFunc p a b) a'.
+    intro.
+    case_eq (eq_dec a a').
+    intros.
+    clear H.
+    rewrite <- e  in *.
+    elim (fresh_witn H0).
+    intro.
+    assert (a' <> a). firstorder.
+    set (lem := proj2 (updatedFuncProp p a b a') H).
+    intros.
+    clear H0.
+    symmetry.
+    exact lem.
+  Qed.
+  
   Theorem staysInDomain p a b x :
     In x (domain p) -> In x (domain (updatePartFunc p a b)).
     intro.
@@ -407,8 +422,8 @@ Module Update (T BT: Typ) (Import nc: Nice T).
     set (lem' := in_dec eq_dec a (domain p)).
     firstorder.
     rewrite H0 in H; discriminate H.
-  Qed.    
-    
+  Qed.
+      
 End Update.
 
 (* Print Update. *)
