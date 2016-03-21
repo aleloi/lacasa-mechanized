@@ -1077,11 +1077,13 @@ Section Preservation.
     rewrite H0 in _7_b.
     assumption.
 
-    (* 7 e *)
+    (* 7 e, b = envRef o_s *)
+    clear _1_c.
+    clear ann.
     intros.
     rename r into o_s.
     rewrite H1 in *.
-    destruct _7_c.
+    destruct _7_c. (* case analysis on WF-var Gamma L s *)
     destruct s0.
     rewrite H0 in e; discriminate e.
     destruct s0.
@@ -1095,8 +1097,9 @@ Section Preservation.
     rename H6 into _7_e_ii.
     set (stays := p_heap.staysInDomain H o_y (obj C' FM') o_s x0).
     fold H' in stays.
-    assert (heap_typeof H o_s x0 = heap_typeof H' o_s stays).
 
+    (* 7 e iii *)
+    assert (heap_typeof H o_s x0 = heap_typeof H' o_s stays) as _7_e_iii.
     case_eq (v_eq_dec o_s o_y).
     intros.
     clear H0. rewrite <- e in *.
@@ -1118,12 +1121,16 @@ Section Preservation.
     unfold heap_typeof.
     rewrite lem.
     reflexivity.
-    rename H0 into _7_e_iii.
+    (* end 7 e iii *)
+    
     set (lem := _5_b s tau _7_a).
     unfold WF_Var.
     rewrite _7_b.
     rewrite _7'.
 
+    (* Case analysis L s = null / o / box with H |- Gamma L s
+     * leads to Gamma s = G, typeof(H, o_s) <: G
+     *)
     destruct lem.
     destruct s0.
     apply inl. apply inl. assumption.
@@ -1148,25 +1155,373 @@ Section Preservation.
     assumption.
     assert ((heap_typeof H r x1) = (heap_typeof H' o_s H5)).
     transitivity (heap_typeof H o_s x0).
+    case_eq (p_heap.func H r).
+    intros.
+    unfold heap_typeof.
+    rewrite H8.
+    rewrite H6 in H8.
+    rewrite H8.
+    reflexivity.
+    intros.
+    unfold heap_typeof.
+    rewrite H8.
+    rewrite H6 in H8.
+    rewrite H8.
+    assumption.
+
+    case_eq (v_eq_dec o_s o_y).
+    intros.
+    clear H8. 
+    transitivity C'.
+    unfold heap_typeof.
+    rewrite e in *.
+    rewrite _2_d. reflexivity.
+    unfold heap_typeof.
+    assert (p_heap.func H' o_y = Some (obj C' FM')).
+    unfold H'.
+    exact (proj1 (p_heap.updatedFuncProp H o_y (obj C' FM') _) (eq_refl _)).
+    rewrite e.
+    rewrite H8.
+    reflexivity.
+    intros.
+    clear H8.
     
+    set (lem := proj2 (p_heap.updatedFuncProp H o_y (obj C' FM') _) n).
+    fold H' in lem.
+    unfold heap_typeof.
+    rewrite lem.
+    reflexivity.
+    rewrite <- H8.
+    destruct H1.
+    exact H9.
     
-    clear H0..
-    (* destruct(_5_b z (typt_box c) H2). *)
-    (* destruct s. *)
-    (* rewrite e0 in H1; discriminate H1. *)
-    (* destruct s. destruct x1. destruct y0. *)
-    (* destruct a. destruct H8. *)
-    (* rewrite H8 in H2; discriminate H2. *)
-    (* destruct s. destruct x1. *)
-    (* destruct y0.    destruct a. *)
-    (* destruct H8. *)
-    (* rewrite H6 in  *)
+    destruct s0.
+    destruct x1.
+    destruct y0.
+    destruct a.
+    destruct H1.
+    rewrite H0 in H2; inversion H2.
+
+    destruct s0.
+    destruct x0; destruct y0. destruct a. destruct H5.
+    rewrite H2 in H0; discriminate H0.
+    (* END 7 e!!! *)
+
+    intros.
+    rename r into o_s.
+    rewrite H1 in *.
+
+    (* Case analysis on H |- Gamma ; L ; s to get box prop: *)
+    set (lem := _5_b s tau _7_a).
+    destruct lem.
+    destruct s0.
+    rewrite e in H0; discriminate H0.
+    destruct s0; destruct x0; destruct y0; destruct a.
+    rewrite H2 in H0; discriminate H0.
+    destruct s0; destruct x0; destruct y0; destruct a; destruct H5.
+    rewrite H2 in H0; simplify_eq H0.
+    intro equRef; rewrite equRef in *.
+    clear H0.
+    rewrite _7_a in H5; simplify_eq H5.
+    intro equTy; rewrite equTy in *.
+    rename c into F.
+    rename _7' into _7_f_i_A.
+    assert (In o_s (p_heap.domain H)).
+    rewrite <- equRef.
+    assumption.
+    assert (In o_s (p_heap.domain H')).
+    unfold H'.
+    apply (p_heap.staysInDomain H _ _ o_s).
+    assumption.
+    assert (heap_typeof H o_s H0  = heap_typeof H' o_s H8) as _7_f_ii.
+
+    case_eq (v_eq_dec o_s o_y).
+    intros.
+    rewrite e in *.
+    clear H9.
+    transitivity C'.
+    unfold heap_typeof.
+    rewrite e.
+    rewrite _2_d.
+    reflexivity.
+    unfold heap_typeof.
+    assert (p_heap.func H' o_y = Some (obj C' FM')).
+    apply (p_heap.updatedFuncProp _ _ _ _).
+    reflexivity.
+    rewrite e.
+    rewrite H9.
+    reflexivity.
+    intros.
+    clear H9.
+    case_eq (p_heap.func H o_s).
+    intros.
+    destruct b0.
+    transitivity c.
+    unfold heap_typeof.
+    rewrite H9.
+    reflexivity.
+    assert (p_heap.func H' o_s = Some (obj c f0)).
+    unfold H'.
+    Check p_heap.updatedFuncProp.
+    transitivity  (p_heap.func H o_s).
+    apply (proj2 (p_heap.updatedFuncProp H o_y (obj C' FM') o_s) ).
+    assumption.
+    assumption.
+    unfold heap_typeof.
+    rewrite H10.
+    reflexivity.
+
+    intros.
+    elim (proj2 (p_heap.fDomainCompat H o_s) H9 H0).
+    unfold WF_Var.
+    rewrite _7_b.
+    rewrite _7_f_i_A.
+    rewrite H2.
+    apply inr.
+    exists (F, o_s).
+    exists H8.
+    split.
+    reflexivity.
+    split.
+    reflexivity.
+    rewrite <- _7_f_ii.
+    assert ((heap_typeof H o_s H0) = (heap_typeof H r x0)
+           ).
+    unfold heap_typeof.
+    rewrite equRef.
+    induction (p_heap.func H o_s);
+    reflexivity.
+    rewrite H9.
+    assumption.
+
+    intro.
+    set (s_in_gamma := p_gamma.in_part_func_domain Gamma s tau _7_a).
+    set (lem := _5_a _ s_in_gamma).
+    elim (proj2 (p_env.fDomainCompat _ _) H0 lem).
+
+    (* HEAP OK *)
+
+    intro.
+    rename o into o_y.
+    rename o0 into o.
+
+    case_eq (v_eq_dec o_y o).
+    intros; clear H0.
+    rewrite <- e in *.
+    set (lem := proj1 (p_heap.updatedFuncProp H o_y (obj C FM') _) (eq_refl _)).
+    fold H' in lem.
+    rewrite lem in H4.
+    inversion H4.
+    rewrite <- H5 in *.
+    rewrite <- H6 in *.
+    clear H5 H6 C0 FM0.
+    clear lem H4 e o.
+    intro; intros.
     
+    case_eq (fn_eq_dec f0 f).
+    intros.
+    clear H4; rewrite e in *.
+    set (lem := proj1 (p_FM.updatedFuncProp FM f (env2fm envVal witn) f) (eq_refl _ )).
+    fold FM' in lem.
+    rewrite H0 in lem.
+    inversion lem.
+    induction envVal; 
+    inversion H5.
+    rewrite <- H6 in *.
+    rename o into o_z.
+    rename H3 into _9_b_ii_B.
+    rename H0 into _9_b_ii_A.
     
+    inversion _1_c.
+    destruct X0.
+    inversion X.
+    inversion X0.
+    set (_9_b_iii_lem := w z (typt_class C0) H23).
+    unfold WF_Var in _9_b_iii_lem.
+    assert ({C_o : ClassName_type * Ref_type |
+             let (C, o) := C_o in
+             {witn : In o (p_heap.domain H) |
+              p_env.func L z = Some (envRef o) /\
+              p_gamma.func Gamma z = Some (typt_class C) /\
+              wf_env.subtypeP P (typt_class (heap_typeof H o witn))
+                              (typt_class C)}}).
+    induction _9_b_iii_lem.
+    induction a.
+    rewrite a in _9_b_ii_B; simplify_eq _9_b_ii_B.
+    exact b.
+    destruct b; destruct x2; destruct y1; destruct a.
+    rewrite H25 in _9_b_ii_B; simplify_eq _9_b_ii_B.
+    clear _9_b_iii_lem.
+
+    destruct X3; destruct x2; destruct y1; destruct a.
+    rewrite H25 in _9_b_ii_B; simplify_eq _9_b_ii_B.
+    intro ref_eq; rewrite ref_eq in *.
+    destruct H26.
+    rename H26 into _9_b_v_C.
+    rename H27 into _9_b_v_D.
+    rename H25 into _9_b_v_A.
+    assert (In o_z (p_heap.domain H)) as _9_b_v_B.
+    rewrite <- ref_eq; assumption.
+    rewrite _9_b_v_C in H23; simplify_eq H23; intro simpl_eq; rewrite simpl_eq in *.
+    inversion X2.
+
+    set (lemlem := w y (typt_class C1) H28).
     
-    åäöp FINISH HERE!
-  Admitted.
-  
+    assert ({C_o : ClassName_type * Ref_type |
+           let (C, o) := C_o in
+           {witn : In o (p_heap.domain H) |
+           p_env.func L y = Some (envRef o) /\
+           p_gamma.func Gamma y = Some (typt_class C) /\
+           wf_env.subtypeP P (typt_class (heap_typeof H o witn))
+                           (typt_class C)}}).
+    induction lemlem.
+    induction a.
+    rewrite a in H1; simplify_eq H1.
+    assumption.
+
+    destruct b; destruct x4; destruct y1; destruct a; destruct H32.
+    rewrite H32 in H28; simplify_eq H28.
+    destruct X3.
+    destruct x4.
+    destruct y1.
+    destruct a.
+    destruct H32.
+    rewrite H31 in H1; simplify_eq H1; intro equu; rewrite equu in *.
+    rewrite H28 in H32; simplify_eq H32; intro equuu; rewrite <- equuu in *.
+    assert (heap_typeof H r1 x4 = C).
+    unfold heap_typeof.
+    rewrite equu.
+    rewrite H2.
+    reflexivity.
+    rewrite H34 in H33.
+
+    assert ((heap.ftypeP P C f f_witn) = D).
+    rewrite <- H30.
+    symmetry.
+    inversion H33.
+    apply (ftype_subclass _ _ _ _ _ H37).
+    rewrite H35.
+
+    exists (p_heap.staysInDomain H o_y (obj C FM') o_z _9_b_v_B).
+    assert ((heap_typeof H' o_z
+                         (p_heap.staysInDomain H o_y (obj C FM') o_z _9_b_v_B))
+            = (heap_typeof H o_z _9_b_v_B)
+           ).
+    unfold heap_typeof.
+    case_eq (rn_eq_dec o_z o_y).
+    intros.
+    rewrite e1.
+    assert (p_heap.func H' o_y = Some (obj C FM')).
+    apply (p_heap.updatedFuncProp).
+    reflexivity.
+    rewrite H37.
+    rewrite H2.
+    reflexivity.
+    intros.
+    assert (p_heap.func H' o_z = p_heap.func H o_z).
+    apply (p_heap.updatedFuncProp).
+    assumption.
+    rewrite H37.
+    induction (p_heap.func H o_z).
+    reflexivity.
+    reflexivity.
+    rewrite H36.
+
+    assert ((heap_typeof H o_z _9_b_v_B) = (heap_typeof H r0 x2)).
+    unfold heap_typeof.
+    rewrite ref_eq.
+    induction (p_heap.func H o_z).
+    reflexivity.
+    reflexivity.
+    rewrite H37.
+    inversion _9_b_v_D.
+    apply (subclass_trans P (heap_typeof H r0 x2) C0 D).
+    assumption.
+    inversion H24.
+    assumption.
+    inversion witn.
+
+    intros.
+    clear H4.
+
+    assert (p_FM.func FM' f0 = p_FM.func FM f0).
+    apply (p_FM.updatedFuncProp).
+    assumption.
+    rewrite H0 in H4. symmetry in H4.
+    set (lem := _1_b o_y C FM H2 f0 o f_witn H4).
+    destruct lem.
+    exists (p_heap.staysInDomain H o_y (obj C FM') o x0).
+
+    assert ((heap_typeof H' o (p_heap.staysInDomain H o_y (obj C FM') o x0))
+            = (heap_typeof H o x0)
+           ).
+
+    case_eq (rn_eq_dec o o_y).
+    intros.
+    clear H5.
+    unfold heap_typeof.
+    rewrite e.
+    assert (p_heap.func H' o_y = Some (obj C FM')).
+    apply (p_heap.updatedFuncProp).
+    reflexivity.
+    rewrite H5.
+    rewrite H2.
+    reflexivity.
+    intros .
+    unfold heap_typeof.
+    assert (p_heap.func H' o = p_heap.func H o).
+    apply (p_heap.updatedFuncProp).
+    assumption.
+    rewrite H6.
+    induction (p_heap.func H o);
+      reflexivity.
+    rewrite H5.
+    assumption.
+
+    intros.
+    assert (p_heap.func H' o = p_heap.func H o).
+    apply (p_heap.updatedFuncProp).
+    firstorder.
+    case_eq (p_heap.func H o).
+    intros.
+    destruct b.
+    rewrite H5 in H4.
+    rewrite H6 in H4.
+    inversion H4.
+    rewrite H8, H9 in *.
+    clear H4 H8 H9 c f0.
+    intro; intros.
+    set (lem := _1_b o C0 FM0 H6 f0 o0 f_witn H4).
+    destruct lem.
+    exists (p_heap.staysInDomain H o_y (obj C FM') o0 x0).
+    assert ((heap_typeof H o0 x0) = (heap_typeof H' o0 (p_heap.staysInDomain H o_y (obj C FM') o0 x0))).
+    case_eq (rn_eq_dec o0 o_y).
+    intros.
+    unfold heap_typeof.
+    rewrite e.
+    rewrite H2.
+    assert (p_heap.func H' o_y = Some (obj C FM')).
+    apply (p_heap.updatedFuncProp).
+    reflexivity.
+    rewrite H8.
+    reflexivity.
+    intros.
+    unfold heap_typeof.
+    assert (p_heap.func H o0 = p_heap.func H' o0).
+    symmetry.
+    apply (p_heap.updatedFuncProp).
+    assumption.
+    rewrite H8.
+    induction (p_heap.func H' o0);
+      reflexivity.
+    rewrite <- H7.
+    assumption.
+    intros.
+    rewrite H6 in H5.
+    rewrite H5 in H4.
+    inversion H4.
+
+  Qed.
 
 
   Theorem single_frame_WF_ENV_preservation :
