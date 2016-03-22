@@ -33,8 +33,16 @@ Section MethodsAndFields.
   (*   auto. *)
   (* Defined. *)
 
-  Definition fields : ClassName_type -> list FieldName_type -> Prop :=
-    fun _ _ => classDecls P = nil.
+  Definition fields : ClassName_type -> list FieldName_type -> Prop.
+  Admitted.
+
+  Definition fieldsList : ClassName_type -> list FieldName_type.
+  Admitted.
+  Theorem fieldsListIsFields :
+    forall C,
+      fields C (fieldsList C).
+  Admitted.
+    
 
   Definition subclass : ClassName_type -> ClassName_type -> Prop :=
     fun _ _ => classDecls P = nil.
@@ -71,6 +79,12 @@ Section MethodsAndFields.
   | classSub : forall C D, subclass C D -> subtype (typt_class C) (typt_class D)
   | boxSub : forall C D, subclass C D -> subtype (typt_box C) (typt_box D)
   | allSub : forall sigma, subtype sigma typt_all.
+
+  Definition ocap : ClassName_type -> Prop.
+  Admitted.
+
+  Theorem ocap_dec : forall C, ocap C \/ ~ (ocap C).
+  Admitted.
 
 End MethodsAndFields.
 

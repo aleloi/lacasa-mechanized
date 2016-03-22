@@ -48,6 +48,11 @@ Section Heap.
                           (ftypeP C f f_witn)
       }.
 
+  Definition Heap_dom_ok H : Prop :=
+    forall o C FM,
+      p_heap.func H o = Some (obj C FM) ->
+      fieldsP C (p_FM.domain FM).
+
   Definition Heap_ok H : Prop :=
     forall o C FM,
       p_heap.func H o = Some (obj C FM) ->

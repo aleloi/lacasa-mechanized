@@ -68,7 +68,7 @@ Record ClassDecl : Type := mkClassDecl {
 
 Record Program : Type := mkProgram {
                              classDecls : list ClassDecl;
-                             globals : list varDefs;
+                             globals : varDefs;
                              programBody: ExprOrTerm;
                              programBodyIsTerm : isTerm programBody
                            }.

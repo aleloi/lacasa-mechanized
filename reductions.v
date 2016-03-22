@@ -128,7 +128,7 @@ Section Reductions.
     exact ( ann_frame (sframe ( e +++ x --> envVal ) e0) a).
   Defined.
 
-  Inductive Reduction_FS : cfg_type -> cfg_type -> Prop :=
+  Inductive Reduction_FS : cfg_type -> cfg_type -> Type:=
 
   | E_StackFrame : forall H H' L L' t t' FS a,
                     Reduction_SF ( # H , L , t ! ) ( # H' , L' , t' ! )  ->

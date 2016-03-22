@@ -26,6 +26,7 @@ Section Preservation.
   Definition fieldsP := fields P.
   Definition TypeChecksP := TypeChecks P.
   Definition Heap_okP := Heap_ok P.
+  Definition Heap_dom_okP := Heap_dom_ok P.
   
   
   
@@ -695,10 +696,8 @@ Section Preservation.
     rename r into o'.
     set (test := _2_j o C FM _2_cd f o').
     
-    Print Heap_obj_ok.
     apply inl.  apply inr.
     exists (E, o').
-    Print p_heap.fDomainCompat.
     unfold Gamma'.
     assert (subclass P C D) as C_sub_D.
     
@@ -841,7 +840,6 @@ Section Preservation.
 
     (* L z = b(r), show Gamma z must be Box[D] *)
 
-    Print WF_Env.
     inversion X0.
     set (lem := X4 z _ H23).
     inversion lem.
@@ -923,7 +921,6 @@ Section Preservation.
     exact H1.
     exact _4_e.
     split.
-    Check subset_preserved.
     exact (subset_preserved _ _ _ _  _  _5_a).
 
     intros s.
@@ -1262,7 +1259,6 @@ Section Preservation.
     reflexivity.
     assert (p_heap.func H' o_s = Some (obj c f0)).
     unfold H'.
-    Check p_heap.updatedFuncProp.
     transitivity  (p_heap.func H o_s).
     apply (proj2 (p_heap.updatedFuncProp H o_y (obj C' FM') o_s) ).
     assumption.
@@ -1526,11 +1522,14 @@ Section Preservation.
 
   Theorem single_frame_WF_ENV_preservation :
     forall H H' L L' t t' sigma ann,
+      forall (heap_dom_ok: Heap_dom_okP H),
       WF_Frame' H (ann_frame (sframe L t) ann) sigma ->
       Heap_okP H ->
       Reduction_SF' ( # H, L, t !) ( # H', L', t' !) ->
-      (WF_Frame' H' (ann_frame (sframe L' t') ann) sigma) *
-      (Heap_okP H').
+      ((WF_Frame' H' (ann_frame (sframe L' t') ann) sigma) *
+       (Heap_okP H') *
+       (Heap_dom_okP H')
+      ).
     intros.
     rename H0 into asm0.
     case_eq t; intros;   rewrite H0 in *  ;    clear H0 t;   inversion X0.
@@ -1542,10 +1541,12 @@ Section Preservation.
     rewrite <- H6 in *; rewrite <- H9 in *; clear  H9 H6.
     rewrite <- H5 in *; clear H5.
     rewrite <- H4 in *; clear H4.
-    Check preservation_case_var.
-
+    
     split.
+    split.
+    
     exact (preservation_case_var H L x y t sigma ann null_ref_box X H10 H3).
+    assumption.
     assumption.
     
     (* Case t = let y = Null in t' *)
@@ -1567,9 +1568,10 @@ Section Preservation.
     clear v.
 
     split.
-
+    split.
     exact (preservation_case_null H L t sigma ann x asm1).
     exact asm2.
+    assumption.
 
 
     (* Case let v = new C in t *)
@@ -1594,90 +1596,15 @@ Section Preservation.
     rewrite H12 in *; clear H12.
 
     split.
-    Check preservation_case_new.
+    split.
+       
     exact (preservation_case_new H L sigma ann t C x o flds asm2 asm3 H10 H5 H11).
-    
-
-    (* intros. *)
-    (* exact i. *)
-    (* intros not_in dummy; clear dummy. *)
-    (* set (H'o'_is_none := proj1 ((p_heap.fDomainCompat  *)
-    (*                 (p_heap.updatePartFunc H o (obj C (p_FM.newPartFunc flds FM_null))) *)
-    (*                             ) o' ) not_in). *)
-
-    
-    
-           
-    (* set (new_4d := _3_b z tau new_4_a). *)
-    (* unfold WF_Var in new_4d. *)
-    (* rewrite new_4_cb in *. *)
-    (* rewrite new__4_ca_ii in *. *)
-    (* rewrite new_4_a in *. *)
-    (* rewrite _6. *)
-
-    (* (* 6 a *) *)
-    (* induction envVar. *)
-    
-    (* apply inl. apply inl. reflexivity. *)
-    (* case_eq (rn_eq_dec r o). *)
-    (* intros r_o_eq dummy'. clear dummy' dummy. *)
-    (* rewrite r_o_eq in *. *)
-    
-    (* set (lemm := proj1 (p_heap.updatedFuncProp H o (obj C (p_FM.newPartFunc flds FM_null)) o) *)
-    (*                      (eq_refl _) *)
-    (*         ). *)
-    
-    (* destruct new_4d. *)
-    (* destruct s. *)
-    (* inversion e. *)
-    (* destruct s. *)
-    (* destruct x0. *)
-    (* destruct y. *)
-    (* destruct a. *)
-    (* inversion H0. *)
-    (* rewrite -> H3 in *. *)
-    (* clear o H3. *)
-    (* rename r0 into o. *)
-    (* clear r_o_eq r. *)
-    (* clear H0. *)
-    (* destruct H1. *)
-    (* inversion H0. *)
-    (* rewrite -> H3 in *. *)
-    (* clear H3 tau. *)
-    (* clear H0. *)
-    
-    
-    (* destruct s. *)
-    (* apply inl. apply inl. *)
-    (* exact e. *)
-    (* apply inl. apply inr. *)
-    (* destruct s. *)
-    (* destruct x0. *)
-    (* exists (c, r). *)
-    (* destruct y. *)
-    (* TODO FINISH!!! *)
-    (* intro. *)
-    (* set (lem'''':= proj2 (p_env.fDomainCompat L z ) H0). *)
-    (* firstorder. *)
-    
-    
-        
-    (* (* Section half_6 from paper: *) *)
-    
-    (* assert (p_env.updatePartFunc L x (envRef o) ) *)
-    
-    
-    (*                  Gamma eff t L ann sigma,) *)
-    
-    (* set (_2_A := t) *)
-    
+    admit.
     admit.
     
     
     
     (* Case let x = Box C in t*)
-    Check    preservation_case_box.
-    split.
     rewrite <- H6 in *; clear H6.
     rewrite <- H9 in *; clear H9 t' e0.
     rewrite <- H8 in *; clear H8 L'.
@@ -1686,13 +1613,15 @@ Section Preservation.
     rewrite <- H3 in *; clear H3 v.
     clear H2 L0 H1 H0.
     rewrite H12 in *; clear H12 FM.
+    split. split.
     apply (preservation_case_box H L sigma ann t C x o flds X asm0 H10 H5 H11).
+    admit.
     admit.
 
 
 
     (* Case SELECT, let x = y.f in t *)
-    split.
+    split. split.
 
     rewrite <- H6 in *; clear H6 e0.
     rewrite <- H9 in *; clear H9 t'.
@@ -1701,9 +1630,9 @@ Section Preservation.
     rewrite <- H4 in *; clear H4 e.
     rewrite <- H3 in *; clear H3 v.
     clear L0 H0 H2 H1.
-    Check preservation_case_select.
     apply (preservation_case_select H L sigma ann x y f t C FM fmVal o X asm0 H10 H11 H12 H5).
     rewrite <- H7; exact asm0.
+    admit.
 
     (* Case ASSIGN, let x = (y.f = z) in t *)
 
@@ -1716,11 +1645,13 @@ Section Preservation.
     clear H5 e0.
     rewrite <- H4 in *.
     clear H4 e.
+    split.
 
     exact (preservation_case_assign _ _ _ _ _ _ _ _ _ _ _ _ _ _ X asm0 H10
                                     H11 H13
           ).
+    admit.
   Admitted.
 
   
-    
+End Preservation.

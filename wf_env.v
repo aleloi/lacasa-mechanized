@@ -124,4 +124,46 @@ Section WF_Env.
                 TypeChecksP Gamma eff t sigma ->
                 WF_Env H Gamma L ->
                 WF_Frame H (ann_frame (sframe L t) ann) sigma.
+
+  Inductive WF_Frame_ann : Heap_type -> ann_frame_type -> typecheck_type -> VarName_type ->
+                           typecheck_type -> Type :=
+  | t_frame2 : forall H Gamma eff t L ann sigma x tau,
+                 isTerm t ->
+                 TypeChecksP (p_gamma.updatePartFunc Gamma x tau) eff t sigma ->
+                 WF_Env H Gamma L ->
+                 WF_Frame_ann H (ann_frame (sframe L t) ann) sigma x tau.
+
+  Notation "( H , x , tau ## F @@ sigma )" := (WF_Frame_ann H F sigma x tau).
+
+  Definition FS_ann_type := option (VarName_type * typecheck_type).
+
+  
+  Inductive WF_FS : FS_ann_type -> Heap_type -> list (ann_frame_type) -> Type :=
+    
+  | T_EmpFS : forall H, WF_FS None H nil
+                              
+  | T_FS_NA : forall H F FS sigma,
+                WF_Frame H (ann_frame F ann_epsilon) sigma ->
+                WF_FS None H FS ->
+                WF_FS None H ((ann_frame F ann_epsilon) :: FS)
+                      
+  | T_FS_NA2 : forall H F FS sigma x tau,
+                 ( H , x , tau ## (ann_frame F ann_epsilon) @@ sigma ) ->
+                 WF_FS None H FS ->
+                 WF_FS (Some (x, tau)) H ((ann_frame F ann_epsilon) :: FS)
+                       
+  | T_FS_A : forall H F FS x tau ,
+                WF_Frame H (ann_frame F (ann_var x)) tau ->
+                WF_FS (Some (x, tau)) H FS ->
+                WF_FS None H ((ann_frame F (ann_var x)) :: FS)
+
+  | T_FS_A2 : forall H F FS y sigma x tau,
+                ( H, y, sigma ## (ann_frame F (ann_var x)) @@ tau) ->
+                WF_FS (Some (x, tau)) H FS ->
+                WF_FS (Some (y, sigma)) H ((ann_frame F (ann_var x)) :: FS).
+  
+  
+  (* Notation "[ ! H , x , tau ## FS ]" := (WF_FS (Some (x, tau)) H FS) (at level 0). *)
+  (* Notation "[ ! H ## FS ]" := (WF_FS None H FS) (at level 0). *)
+  
 End WF_Env.
