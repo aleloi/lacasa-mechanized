@@ -17,6 +17,8 @@ Module Type AbstractNamesAndTypes.
   Declare Module cn : Nice ClassNameM.
   Declare Module rn : Nice RefM.
 
+
+  
   
 End AbstractNamesAndTypes.
 
@@ -35,12 +37,16 @@ Module NamesAndTypesAndOtherNames (ant: AbstractNamesAndTypes) .
   Definition cn_eq_dec := ant.cn.eq_dec.
   Definition rn_eq_dec := ant.rn.eq_dec.
 
+  Definition var_name_this :=
+    let fresh := vn.constructFresh nil in let (x, _) := fresh in x.
   
   Inductive annotation_type :=
   | ann_epsilon : annotation_type
   | ann_var : VarName_type -> annotation_type.
   
-      
+  Inductive class :=
+  | AnyRef : class
+  | extends : ClassName_type -> class -> class.
 
   Inductive FM_Range_type :=
     | FM_null : FM_Range_type
@@ -56,7 +62,7 @@ Module NamesAndTypesAndOtherNames (ant: AbstractNamesAndTypes) .
 
   (* run-time object *)
   Inductive RTObject :=
-  | obj : ClassName_type -> FM_type -> RTObject.
+  | obj : class -> FM_type -> RTObject.
 
   Module RTObject_typeM <: Typ .
     Definition t := RTObject.
@@ -80,10 +86,36 @@ Module NamesAndTypesAndOtherNames (ant: AbstractNamesAndTypes) .
 
   Definition Env_type := p_env.PartFunc.
 
+  
+  Theorem class_eq_dec : forall x y : class, {x = y } + {x <> y}.
+    intro.
+    induction x.
+    intro.
+    destruct y.
+    left; reflexivity.
+    right; simplify_eq.
+
+    intro y'.
+    destruct y'.
+    right; simplify_eq.
+    set (ind_hyp := IHx y').
+    destruct ind_hyp.
+    rewrite e.
+    destruct (cn_eq_dec c c0).
+    rewrite e0.
+    left; reflexivity.
+    right.
+    intro H; inversion H.
+    firstorder.
+
+    right; intro H; inversion H.
+    firstorder.
+  Qed.
+        
 
   Inductive typecheck_type :=
-  | typt_class : ClassName_type -> typecheck_type
-  | typt_box : ClassName_type -> typecheck_type
+  | typt_class : class -> typecheck_type
+  | typt_box : class -> typecheck_type
   | typt_all : typecheck_type.
 
   Inductive effect :=

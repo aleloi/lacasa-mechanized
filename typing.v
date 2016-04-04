@@ -5,6 +5,8 @@ Require Import classTable.
 Require Import sframe.
 Require Import reductions.
 Require Import namesAndTypes.
+Require Import ocap.
+
 
 Import ConcreteEverything.
 
@@ -14,6 +16,8 @@ Section Typing.
   Definition subtypeP := subtype P.
   Definition fldP := fld P.
   Definition ftypeP := ftype P.
+
+  Print effect.
 
   Inductive TypeChecks : Gamma_type -> effect ->
                          ExprOrTerm -> typecheck_type -> Type :=
@@ -38,15 +42,21 @@ Section Typing.
                  TypeChecks gamma eff (FieldAssignment x f y) (typt_class C)
 
   (* TODO: Ocap! *)
-  | T_New : forall gamma C eff,
-              TypeChecks gamma eff (New C) (typt_class C)
+  | T_New_ocap :
+      forall gamma C,
+        ocap P C ->
+        TypeChecks gamma eff_ocap (New C) (typt_class C)
+
+  | T_New_not_ocap :
+      forall gamma C,
+        TypeChecks gamma eff_epsilon (New C) (typt_class C)
 
   | T_Open : forall gamma eff x C y t sigma,
                       TypeChecks gamma eff (Var x) (typt_box C) ->
                       TypeChecks (p_gamma.updatePartFunc 
                                     p_gamma.emptyPartFunc
                                     y (typt_class C)
-                                 ) eff t sigma ->
+                                 ) eff_ocap t sigma ->
                       TypeChecks gamma eff (Open x y t) (typt_box C)
 
   | T_Let : forall gamma eff e sigma x tau t,
@@ -55,6 +65,7 @@ Section Typing.
                          t tau ->
               TypeChecks gamma eff (TLet x e t) tau.
 
+  
   
 
 End Typing.

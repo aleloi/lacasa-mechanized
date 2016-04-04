@@ -10,8 +10,8 @@ Inductive ExprOrTerm :=
 | FieldSelection : VarName_type -> FieldName_type -> ExprOrTerm
 | FieldAssignment : VarName_type -> FieldName_type -> VarName_type -> ExprOrTerm
 | MethodInvocation : VarName_type -> MethodName_type -> VarName_type -> ExprOrTerm
-| New : ClassName_type -> ExprOrTerm
-| Box : ClassName_type -> ExprOrTerm
+| New : class -> ExprOrTerm
+| Box : class -> ExprOrTerm
 
 (* x .open  y      =>    t *)
 | Open : VarName_type -> VarName_type -> ExprOrTerm -> ExprOrTerm
@@ -40,29 +40,23 @@ Definition isExpr (e: ExprOrTerm) : Prop :=
   end.
 
 
-Inductive class :=
-| AnyRef : class
-| extends : ClassName_type -> class -> class.
 
-Definition flds := list (FieldName_type * ClassName_type).
-Definition varDefs := list (VarName_type * ClassName_type).
 
-Inductive ty :=
-| simple : ClassName_type -> ty
-| box : ClassName_type -> ty.
+Definition flds := list (FieldName_type * class).
+Definition varDefs := list (VarName_type * class).
 
 Record MethDecl : Type := mkMethodDecl {
                               name: MethodName_type;
-                              argType: ty;
+                              argType: typecheck_type;
                               argName: VarName_type;
-                              retType: ty;
+                              retType: typecheck_type;
                               methodBody: ExprOrTerm;
                               methodBodyIsTerm : isTerm methodBody
                             }.
 
 Record ClassDecl : Type := mkClassDecl {
                                cls: class;
-                               fields: flds;
+                               cdFields: flds;
                                methods: list MethDecl 
                              }.
 

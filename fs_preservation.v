@@ -32,8 +32,6 @@ Section Preservation.
   Notation "[ H , x , tau ## FS ]" := (WF_FS P (Some (x, tau)) H FS) (at level 0).
   Notation "[ H ## FS ]" := (WF_FS P None H FS) (at level 0).
 
-
-
   Theorem multiple_frame_WF_ENV_preservation :
     forall H H' FS FS',
       Reduction_FS' (H, FS)

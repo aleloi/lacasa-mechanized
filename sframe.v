@@ -7,9 +7,7 @@ Import ConcreteEverything.
 
 
 Inductive sframe_type := | sframe : Env_type -> ExprOrTerm -> sframe_type.
-
 Inductive sfconfig_type := | sfconfig :  Heap_type -> sframe_type -> sfconfig_type.
-
 Notation "( # H , L , t ! )" := (sfconfig H (sframe L t)) (at level 0).
 
 (* Alternatives:

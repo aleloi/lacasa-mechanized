@@ -93,6 +93,7 @@ Section Reductions.
                 Reduction_SF ( # H , L , t_let x <- (FieldSelection y f) t_in t ! )
                         ( # H,
                           ( L +++ x --> (fm2env fmVal) ) , t ! )
+  
 
   (* 
    * Added is_not_box envVal to E_Assign, because range of
@@ -155,7 +156,20 @@ Section Reductions.
                             (H, (ann_frame (sframe (p_env.emptyPartFunc +++ y --> (envBox o) )  t1)
                                            ann_epsilon)
                                   :: (ann_frame (sframe ( L +++ x1 --> (envBox o) ) t2)
-                                                ann) :: FS).
-  (* TODO: E_invoke *)
+                                                ann) :: FS)
+  | E_Invoke : forall H abcd,
+                 isTerm t' ->
+                 isTerm t ->
+                 p_env.func L y = Some (envRef o) ->
+                 p_heap.func H o = Some (obj C FM) ->
+                 mbodyP C m = (x, t') ->
+                 L' = p_env.updatePartFunc globalEnv 
+                 Reduction_FS (H, (ann_frame (sframe L, t_let x <- Invoke y m z t_in t) l) :: FS)
+                              (H, (ann_frame (sframe L' t') (ann_var x))
+                                    ::
+                                    (ann_frame (sframe L t) l)
+                                    ::
+                                    FS
+                              ).
                             
 End Reductions.

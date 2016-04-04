@@ -14,29 +14,29 @@ Section MethodsAndFields.
   (* Parameter CT : list ClassDecl. *)
   (* Maybe change to method name? *)
 
-  Definition method : ClassName_type -> MethDecl -> Prop :=
+  Definition method : class -> MethDecl -> Prop :=
     fun _ _ => classDecls P = nil.
 
-  Definition methods : ClassName_type -> list MethDecl :=
+  Definition class_name_methods : class -> list MethDecl :=
     fun _ => match classDecls P with
                | nil => nil
                | _ => nil
              end.
 
-  Definition fld : ClassName_type -> FieldName_type -> Prop :=
+  Definition fld : class -> FieldName_type -> Prop :=
     fun _ _ => classDecls P = nil.
 
   Definition ftype : forall C f,
-                       fld C f -> ClassName_type :=
+                       fld C f -> class :=
     fun C _ _ => C.
   (*   destruct (ant.fn.constructFresh nil). *)
   (*   auto. *)
   (* Defined. *)
 
-  Definition fields : ClassName_type -> list FieldName_type -> Prop.
+  Definition fields : class -> list FieldName_type -> Prop.
   Admitted.
 
-  Definition fieldsList : ClassName_type -> list FieldName_type.
+  Definition fieldsList : class -> list FieldName_type.
   Admitted.
   Theorem fieldsListIsFields :
     forall C,
@@ -44,7 +44,7 @@ Section MethodsAndFields.
   Admitted.
     
 
-  Definition subclass : ClassName_type -> ClassName_type -> Prop :=
+  Definition subclass : class -> class -> Prop :=
     fun _ _ => classDecls P = nil.
 
   Theorem subclass_refl C :
@@ -80,11 +80,22 @@ Section MethodsAndFields.
   | boxSub : forall C D, subclass C D -> subtype (typt_box C) (typt_box D)
   | allSub : forall sigma, subtype sigma typt_all.
 
-  Definition ocap : ClassName_type -> Prop.
+  Definition ocap : class -> Prop.
   Admitted.
 
   Theorem ocap_dec : forall C, ocap C \/ ~ (ocap C).
   Admitted.
+
+  Fixpoint lookup_l (c: class) (l: list ClassDecl) : option ClassDecl :=
+    match l with
+      | nil => None
+      | cd :: cds => if class_eq_dec c (cls cd)
+                     then (Some cd)
+                     else (lookup_l c cds)
+    end.
+
+  Definition lookup (c: class) : option ClassDecl :=
+    lookup_l c (classDecls P).
 
 End MethodsAndFields.
 
