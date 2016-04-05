@@ -10,29 +10,17 @@ Section Ocap.
 
   Require Import Coq.Lists.List.
 
-    
   (* Everything should be initialized to null... TODO: refactor*)
-  Definition global_heap_lst (lst: varDefs) : Heap_type * Env_type.
+  Definition global_env_lst (lst: varDefs) : Env_type.
     induction lst.
-    exact (p_heap.emptyPartFunc, p_env.emptyPartFunc).
-    destruct IHlst.
-    set (o_fresh := ConcreteNamesAndTypes.vn.constructFresh (p_heap.domain h)).
-    destruct o_fresh as [o  o_fresh_proof].
+    exact p_env.emptyPartFunc.
     destruct a.
-    rename c into C.
-    rename h into H.
-    rename e into L.
-    set (flds := fieldsList P C).
-    set (FM := p_FM.newPartFunc flds FM_null).
-    set (heapVal := obj C FM).
-    split.
-    exact (p_heap.updatePartFunc H o heapVal ).
-
-    exact (p_env.updatePartFunc L v (envRef o)).
+    rename IHlst into L.
+    exact (p_env.updatePartFunc L v envNull).
   Defined.
 
-  Definition globalHeap (P: Program) : Heap_type * Env_type:=
-    global_heap_lst (globals P).
+  Definition globalEnv : Env_type :=
+    global_env_lst (globals P).
 
   Fixpoint noGlobals (env : list VarName_type) (t: ExprOrTerm) : Prop :=
     match t with

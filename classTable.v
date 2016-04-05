@@ -14,8 +14,20 @@ Section MethodsAndFields.
   (* Parameter CT : list ClassDecl. *)
   (* Maybe change to method name? *)
 
-  Definition method : class -> MethDecl -> Prop :=
-    fun _ _ => classDecls P = nil.
+  Definition method : class -> MethodName_type -> MethDecl -> Prop :=
+    fun _ _ _ => classDecls P = nil.
+
+  Definition mtype C m md 
+             (witn: method C m md) :=
+    retType md.
+
+  Definition mbody C m md
+             (witn: method C m md) :=
+    methodBody md.
+
+  Definition mparam C m md
+             (witn: method C m md) :=
+    argName md.
 
   Definition class_name_methods : class -> list MethDecl :=
     fun _ => match classDecls P with

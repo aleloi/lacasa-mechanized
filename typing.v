@@ -17,8 +17,6 @@ Section Typing.
   Definition fldP := fld P.
   Definition ftypeP := ftype P.
 
-  Print effect.
-
   Inductive TypeChecks : Gamma_type -> effect ->
                          ExprOrTerm -> typecheck_type -> Type :=
   | T_Null : forall gamma eff,
@@ -51,13 +49,22 @@ Section Typing.
       forall gamma C,
         TypeChecks gamma eff_epsilon (New C) (typt_class C)
 
+
+  | T_Invoke :
+      forall gamma C y m z md eff sigma , (* TODO recursion and well-formedness*)
+      forall (witn: method P C m md),
+        p_gamma.func gamma y = Some (typt_class C) ->
+        p_gamma.func gamma z = Some sigma ->
+        subtypeP sigma (argType md) ->
+        TypeChecks gamma eff (MethodInvocation y m z) (retType md)
+
   | T_Open : forall gamma eff x C y t sigma,
-                      TypeChecks gamma eff (Var x) (typt_box C) ->
-                      TypeChecks (p_gamma.updatePartFunc 
-                                    p_gamma.emptyPartFunc
-                                    y (typt_class C)
-                                 ) eff_ocap t sigma ->
-                      TypeChecks gamma eff (Open x y t) (typt_box C)
+               TypeChecks gamma eff (Var x) (typt_box C) ->
+               TypeChecks (p_gamma.updatePartFunc 
+                             p_gamma.emptyPartFunc
+                             y (typt_class C)
+                          ) eff_ocap t sigma ->
+               TypeChecks gamma eff (Open x y t) (typt_box C)
 
   | T_Let : forall gamma eff e sigma x tau t,
               TypeChecks gamma eff e sigma ->

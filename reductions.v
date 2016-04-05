@@ -4,6 +4,7 @@ Require Import heap.
 Require Import classTable.
 Require Import sframe.
 Require Import namesAndTypes.
+Require Import ocap.
 
 Import ConcreteEverything.
 
@@ -18,7 +19,7 @@ Section Reductions.
                                       (at level 0).
   Notation heapUpd := p_heap.updatePartFunc.
 
-  Notation fieldsP := (fields P).
+  Notation fieldsP := fields .
 
   (* Notation "$$ C FM $$" := (obj C FM) (at level 201). *)
 
@@ -128,7 +129,7 @@ Section Reductions.
     destruct s.
     exact ( ann_frame (sframe ( e +++ x --> envVal ) e0) a).
   Defined.
-
+  
   Inductive Reduction_FS : cfg_type -> cfg_type -> Type:=
 
   | E_StackFrame : forall H H' L L' t t' FS a,
@@ -157,19 +158,41 @@ Section Reductions.
                                            ann_epsilon)
                                   :: (ann_frame (sframe ( L +++ x1 --> (envBox o) ) t2)
                                                 ann) :: FS)
-  | E_Invoke : forall H abcd,
-                 isTerm t' ->
-                 isTerm t ->
-                 p_env.func L y = Some (envRef o) ->
-                 p_heap.func H o = Some (obj C FM) ->
-                 mbodyP C m = (x, t') ->
-                 L' = p_env.updatePartFunc globalEnv 
-                 Reduction_FS (H, (ann_frame (sframe L, t_let x <- Invoke y m z t_in t) l) :: FS)
-                              (H, (ann_frame (sframe L' t') (ann_var x))
-                                    ::
-                                    (ann_frame (sframe L t) l)
-                                    ::
-                                    FS
-                              ).
-                            
+
+  (* x <- y.m(z) in t 
+   *  L(y) = o
+   *  H(o) = <C, FM>
+   *  mbody(C, m) = t'
+   *  mparam(C, m) = p
+   *  L0 = globals
+   *)
+  | E_Invoke : forall H t' t L L' x y z p m l o C FM FS md Lz,
+                 forall (witn: method P C m md), 
+                   isTerm t' ->
+                   isTerm t ->
+                   p_env.func L y = Some (envRef o) ->   (* L y = o*)
+                   p_env.func L z = Some Lz ->           (* z in dom(L) *)
+                   p_heap.func H o = Some (obj C FM) ->  (* H o = <C, FM> *)
+                   mbody P C m md witn = t' ->           (* mbody(C, m) = t' *)
+                   mparam P C m md witn = p ->           (* mparam(C, m) = p *)
+                   L' =                        (* L' = L[this -> o, p -> L z]*)
+                   p_env.updatePartFunc
+                     (p_env.updatePartFunc
+                        (globalEnv P)
+                        var_name_this (envRef o))
+                     p Lz
+                   ->
+                   Reduction_FS
+                     (H,
+                      (ann_frame
+                         (sframe L
+                          t_let x <- MethodInvocation y m z t_in t) l)
+                        :: FS)
+                     (H, (ann_frame (sframe L' t') (ann_var x))
+                           ::
+                           (ann_frame (sframe L t) l)
+                           ::
+                           FS
+                     ).
+  
 End Reductions.

@@ -7,7 +7,7 @@ Import ConcreteEverything.
 
 Section Heap.
   Variable P: Program.
-  Definition fieldsP := fields P.
+  Definition fieldsP := fields.
   Definition subclassP := subclass P.
   Definition fldP := fld P.
   Definition ftypeP := ftype P.

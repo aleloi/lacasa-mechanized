@@ -9,6 +9,7 @@ Inductive ExprOrTerm :=
 | Var : VarName_type -> ExprOrTerm
 | FieldSelection : VarName_type -> FieldName_type -> ExprOrTerm
 | FieldAssignment : VarName_type -> FieldName_type -> VarName_type -> ExprOrTerm
+(* MethodInvocation y m z ~ y.m(z) *)
 | MethodInvocation : VarName_type -> MethodName_type -> VarName_type -> ExprOrTerm
 | New : class -> ExprOrTerm
 | Box : class -> ExprOrTerm
