@@ -961,6 +961,108 @@ Section Preservation.
     clear H' lem H4 obj' H1 H3.
     exact (heap_dom_ok o' C0 FM H'a_is_obj).
   Qed.
+
+
+  Theorem preservation_case_box_heap :
+    forall H L sigma ann t C x (o: p_heap.A) flds,
+      forall (heap_dom_ok: Heap_dom_okP H),
+        WF_Frame' H (ann_frame (sframe L t_let x <- Box C t_in (t)) ann) sigma ->
+        Heap_okP H ->
+        ~ In o (p_heap.domain H) ->
+        isTerm t ->
+        fieldsP C flds ->
+        let H' := (p_heap.updatePartFunc
+                     H o (obj C (p_FM.newPartFunc flds FM_null)))
+        in 
+        (Heap_okP H') *
+        (Heap_dom_okP H').
+    intros.
+    unfold Heap_okP; unfold Heap_ok; unfold Heap_dom_okP;
+    unfold Heap_dom_ok.
+
+    
+    
+    apply product_forall; intro o';
+    apply product_forall; intro C0;
+    apply product_forall; intro FM.
+    apply product_forall; intro H'a_is_obj.
+
+    set (obj' := (obj C (p_FM.newPartFunc flds FM_null)));
+    fold obj' in H'.
+
+    case_eq (rn_eq_dec o o'); intros are_eq _.
+    rewrite <- are_eq in *; clear o' are_eq.
+    set (lem := proj1 (p_heap.updatedFuncProp
+                         H o obj' o)
+                      (eq_refl _)
+        ).
+    fold H' in lem.
+    rewrite lem in H'a_is_obj; inversion H'a_is_obj.
+    rewrite <- H5 in *.
+    rewrite <- H6 in *.
+    clear H6 H5 H'a_is_obj lem C0 FM. 
+
+    rewrite (p_FM.newPartFuncDomain flds FM_null).
+    unfold heap.fieldsP.
+    unfold fieldsP in H3.
+
+    split.
+    intros f o'' f_is_fld_C FM_o''_is_some.
+    set (lem := proj1 (p_FM.newPartFuncProp flds FM_null f) ).
+    set (FM := (p_FM.newPartFunc flds FM_null)).
+    fold FM in FM_o''_is_some, lem.
+    assert (In f flds) as f_in_flds.
+    
+    set (lem'' := p_FM.fDomainCompat FM f).
+
+    case_eq (in_dec fn_eq_dec f flds).
+    intros is_in _; assumption.
+    intros not_in _.
+    firstorder.
+    rewrite H4 in FM_o''_is_some.
+    discriminate.
+
+    set (lem'' := proj1 lem f_in_flds).
+    rewrite lem'' in FM_o''_is_some; discriminate.
+    assumption.
+
+    assert (o' <> o). firstorder.
+
+    set (lem := proj2 (p_heap.updatedFuncProp
+                         H o obj' o')
+                      H4
+        ).
+    clear are_eq.
+    fold H' in lem.
+
+
+    destruct X.
+    clear Gamma eff t0 L0 ann0 sigma i t1 w H2.
+    rewrite lem in H'a_is_obj.
+    split.
+    unfold Heap_obj_ok.
+    intros f o'' f_witn FM_f_eq.
+    destruct (H0 _ _ _ H'a_is_obj f o'' f_witn FM_f_eq) as
+        [o''_in_H C''_sub_ftype].
+    set (C'' := (heap_typeof H o'' o''_in_H)).
+    fold C'' in C''_sub_ftype.
+    exists (p_heap.staysInDomain _ _ _ _  o''_in_H).
+    set (o''_in_H' := (p_heap.staysInDomain H o obj' o'' o''_in_H)).
+    assert ((heap_typeof H' o'' o''_in_H') = C'').
+
+    set (lemlem := p_heap.freshProp _ _ obj' H1 _ o''_in_H).
+    fold H' in lemlem.
+    clear lem H'a_is_obj f_witn C0 C''_sub_ftype FM FM_f_eq o' H4 f.
+
+    destruct (heap_typeof_impl P H o'' C'' o''_in_H (eq_refl _))
+      as [FM'' Ho''].
+    rewrite Ho'' in lemlem; symmetry in lemlem.
+    apply (heap_typeof_same P _ _ _ FM''); assumption.
+    rewrite H2; assumption.
+    unfold heap.fieldsP.
+    clear H' lem H4 obj' H1 H3.
+    exact (heap_dom_ok o' C0 FM H'a_is_obj).
+  Qed.
   
   Theorem preservation_case_box :
     forall H L sigma ann t C x o flds,
@@ -2073,9 +2175,14 @@ Section Preservation.
     rewrite H12 in *; clear H12 FM.
     split. split.
     apply (preservation_case_box H L sigma ann t C x o flds X asm0 H10 H5 H11).
-    admit.
-    admit.
 
+    (* TWO ADMITS BELOW: change to the following. *)
+    apply (preservation_case_box_heap H L sigma ann t C x o flds heap_dom_ok
+                                      X asm0 H10 H5 H11
+          ).
+    apply (preservation_case_box_heap H L sigma ann t C x o flds heap_dom_ok
+                                      X asm0 H10 H5 H11
+          ).
 
 
     (* Case SELECT, let x = y.f in t *)
