@@ -1074,7 +1074,292 @@ Section Preservation.
       WF_Frame'
         (p_heap.updatePartFunc H o (obj C (p_FM.newPartFunc flds FM_null)))
         (ann_frame (sframe (p_env.updatePartFunc L x (envBox o)) t) ann) sigma.
-    admit. Admitted.
+    intros.
+    rename X into asm2.
+    rename H2 into H5.
+    rename H0 into asm3.
+    rename H3 into H11.
+    rename H1 into H10.
+    
+
+    (* 2 *)
+    inversion asm2.
+    rename X into _2_a.
+    rename X0 into _2_b.
+    clear H3 sigma0.
+    clear H6 ann0.
+    clear t0 H4 L0 H1 H0 H2.
+
+    (* 3 *)
+    inversion _2_b.
+    rename H0 into _3_a.
+    rename X into _3_b.
+
+    (* 4 *)
+    inversion _2_a.
+    clear tau H2 t0 H6 x0 H3 eff0 H1 gamma H0.
+    rename sigma0 into sigma'.
+    rename X0 into _4_b.
+    rename X into _4_a.
+    clear H4 e.
+
+
+    (* 5 *)
+    inversion _4_a.
+    rewrite <- H2 in *; rewrite <- H4 in *.
+    clear H1 H0 C0 H2 H4 H2 eff.
+    rename H3 into C_is_ocap.
+
+
+    (* section between 5, 6 let's call it half_6 *)
+    (* This is not in the same order on paper *)
+    (* split. *)
+    apply ( t_frame1' _
+                     (p_gamma.updatePartFunc Gamma x (typt_box C))
+                     eff_ocap _ _ ann sigma).
+    exact H5.
+    exact _4_b.
+    assert (gamma_env_subset (p_gamma.updatePartFunc Gamma x (typt_box C))
+     (p_env.updatePartFunc L x (envBox o))) as _7.
+    exact (subset_preserved Gamma L x sigma' envNull _3_a). (* actually, 7 *)
+    split. exact _7.
+    intros z tau.
+    case_eq (v_eq_dec x z).
+    intro x_is_z; rewrite <- x_is_z in *; clear x_is_z z.
+    intro dummy; clear dummy.
+    (* Section half 6 on paper here somewhere *)
+    intro half_6.
+    set (half_6_a_i := proj1 (p_env.updatedFuncProp L x (envBox o) x) (eq_refl _)).
+    assert (In o (p_heap.domain (p_heap.updatePartFunc H o (obj C (p_FM.newPartFunc flds FM_null)))))
+      as o_witn.
+    apply p_heap.updatedFuncIn.
+    set (H'o := proj1 (p_heap.updatedFuncProp H o (obj C (p_FM.newPartFunc flds FM_null)) o)
+                      (eq_refl _)).
+    assert ((heap_typeof
+               (p_heap.updatePartFunc H o
+                                      (obj C (p_FM.newPartFunc flds FM_null)))
+               o o_witn) = C) as half_6_a_ii_first.
+    apply (heap_typeof_same P _ _ _ _ H'o).
+    
+    (* rewrite e. *)
+    (* reflexivity. *)
+
+    
+    assert (subtypeP ( typt_class (heap_typeof
+                                     (p_heap.updatePartFunc H o
+                                                            (obj C (p_FM.newPartFunc flds FM_null)))
+                                     o o_witn)) (typt_class C)) as half_6_a_ii.
+    rewrite half_6_a_ii_first.
+    unfold subtypeP.
+    apply classSub.
+    apply subclass_refl. (* admitted (actually not defined) *)
+    set (lem := proj1 (p_gamma.updatedFuncProp Gamma x (typt_box C) x) (eq_refl _)).
+    rewrite half_6 in lem.
+    inversion lem.
+    rewrite H1 in *; clear lem H1 tau.
+    rename half_6 into half_6_a_iii.
+    apply inr.  exists (C, o).
+    exists o_witn.
+    split.
+    exact half_6_a_i.
+    split.
+    exact half_6_a_iii.
+    exact half_6_a_ii.
+
+    (* 6 [THIS starts like #4 from E-Null]*)
+    
+    intros _6_c dummy _6_a.
+    clear dummy.
+    
+        
+    assert (p_gamma.func Gamma z = Some tau) as e_vi.
+    rewrite <- _6_a.
+    symmetry.
+    apply (proj2 (p_gamma.updatedFuncProp Gamma x (typt_box C) z)).
+    firstorder.
+    
+    (* set (new__4_d := _6_b z tau _4_a). *)
+    (* unfold WF_Var. *)
+    
+    (* rewrite H0. *)
+    
+
+    
+    (* Require Import Coq.Lists.List. *)
+    assert (In z (p_gamma.domain Gamma)) as z_in_dom_Gamma.
+    set (lem := p_gamma.fDomainCompat Gamma z).
+    set (in_or_not := in_dec v_eq_dec z (p_gamma.domain Gamma)).
+    firstorder. rewrite H0 in e_vi; discriminate.
+
+    
+
+    set (z_in_dom_L := _3_a z z_in_dom_Gamma).
+    case_eq (p_env.func L z).
+    intros envVar L_z_val.
+    assert (p_env.func (p_env.updatePartFunc L x (envBox o) ) z
+            = Some envVar) as _6_bb.
+    transitivity (p_env.func L z).
+    apply p_env.updatedFuncProp. firstorder.
+    exact L_z_val.
+
+    destruct envVar.
+
+    (* 6 d *)
+    apply inl. apply inl.
+    exact _6_bb.
+
+    (* 6 e *)
+    
+    rename r into o'.
+
+    assert ({ C | {witn |
+             p_env.func L z = Some (envRef o') /\
+             p_gamma.func Gamma z = Some (typt_class C) /\
+             subtypeP (typt_class (heap_typeof H o' witn)) (typt_class C)
+            }}).
+    elim (_3_b z tau e_vi).
+    intro.
+    destruct a.
+    rewrite -> e in L_z_val; discriminate.
+    destruct s.
+    destruct x0.
+    destruct y.
+    destruct a.
+    destruct H1.
+    rewrite L_z_val in H0.
+    inversion H0.
+    rewrite H4 in *; clear H4 o'; rename r into o'.
+    clear H0.
+    rewrite e_vi in H1.
+    inversion H1. rewrite -> H3 in *.
+    clear H3 tau H1.
+    exists c. exists x0.
+    split.
+    exact L_z_val.
+    split.
+    exact e_vi.
+    exact H2.
+
+    intro.
+    destruct b. destruct x0. destruct y. destruct a. destruct H1.
+    exists c.
+    rewrite L_z_val in H0.
+    inversion H0.
+    destruct X. destruct s. destruct a. destruct H1.
+    clear H0.
+    rename x0 into C'.
+    rename x1 into o'_witness.
+
+    apply inl. apply inr.
+    exists (C', o').
+    exists (p_heap.staysInDomain H o (obj C (p_FM.newPartFunc flds FM_null)) o' o'_witness).
+    split.
+    exact _6_bb.
+    split.
+    rewrite <- H1.
+    apply (p_gamma.updatedFuncProp). firstorder.
+
+    set (H' := (p_heap.updatePartFunc H o (obj C (p_FM.newPartFunc flds FM_null)))).
+    apply classSub.
+    inversion H2.
+    assert (p_heap.func H o' = p_heap.func H' o') as _6_e_ii.
+    apply (p_heap.freshProp _ _ _ H10 _ o'_witness).
+    assert ((heap_typeof H' o'
+                         (p_heap.staysInDomain H o (obj C (p_FM.newPartFunc flds FM_null)) o'
+                                               o'_witness))
+            = (heap_typeof H o' o'_witness))
+      as _6_e_iii.
+
+    case_eq (p_heap.func H o').
+    intros. destruct b.
+    set (stays_witn := (p_heap.staysInDomain
+                          H o
+                          (obj C
+                               (p_FM.newPartFunc flds FM_null)) o'
+                          o'_witness)).
+    fold stays_witn.
+    rewrite <- H0 in *.
+    rewrite _6_e_ii in H6.
+    assert (c = C0).
+    symmetry in H0.
+    set (lem := heap_typeof_impl P _ _ _ _ H0).
+    destruct lem.
+    rewrite H6 in _6_e_ii.
+    rewrite e in _6_e_ii.
+    inversion _6_e_ii.
+    reflexivity.
+    rewrite <- H8.
+    apply (heap_typeof_same P _ _ _ _ H6).
+
+    (* None *)
+    intro is_none;  induction (proj2 (p_heap.fDomainCompat _ _)
+                                     is_none o'_witness).
+        
+    rewrite _6_e_iii.
+    exact H4.
+    
+    (* 6 L(z) = box o' *)
+    rename r into o'.
+    set (H' := (p_heap.updatePartFunc H o (obj C (p_FM.newPartFunc flds FM_null)))).
+    set (Gamma' := (p_gamma.updatePartFunc Gamma x (typt_class C))).
+    fold Gamma' in _4_b, _7, _6_a.
+    set (L' := (p_env.updatePartFunc L x (envRef o))).
+    fold L' in _7, _6_bb.
+
+    set (o_is_WF := _3_b z tau e_vi).
+    inversion o_is_WF.
+    destruct X.
+    rewrite e in L_z_val.
+    inversion L_z_val.
+    destruct s.
+    destruct x0.
+    destruct y.
+    destruct a.
+    rewrite H0 in L_z_val.
+    inversion L_z_val.
+
+    destruct X.  destruct x0.    destruct y. destruct a. destruct H1.
+    rewrite H0 in L_z_val.
+    inversion L_z_val.
+    rewrite <- H4 in *.
+    clear o' H4.
+    rename r into o'.
+    clear L_z_val.
+    apply inr.
+    exists (c, o').
+    exists (p_heap.staysInDomain _ _ _ _ x0).
+    split.
+    rewrite <- H0.
+    apply (proj2 (p_env.updatedFuncProp _ _  _ _ )).
+    firstorder.
+    split.
+    rewrite <- H1.
+    apply (proj2 (p_gamma.updatedFuncProp _ _  _ _ )).
+    firstorder.
+    apply classSub.
+    inversion H2.
+    clear H4 C0 H3.
+    assert (p_heap.func H o' = p_heap.func H' o').
+    apply (p_heap.freshProp).
+    exact H10.
+    exact x0.
+
+    set (C' :=  heap_typeof H o' x0).
+    fold C' in H6, H2.
+    set (stays_witn := (p_heap.staysInDomain
+                          H o (obj C (p_FM.newPartFunc flds FM_null)) o'
+                          x0)).
+    assert ((heap_typeof H' o' stays_witn) = C').
+
+    destruct (heap_typeof_impl P _ _ C' x0 (eq_refl _)).
+    rewrite e in H3.
+    symmetry in H3.
+    apply (heap_typeof_same P _ _ _ _ H3 stays_witn).
+    rewrite H4.
+    assumption.
+    intro L_z_is_none; induction (proj2 (p_env.fDomainCompat _ _) L_z_is_none).
+    auto.
+  Qed.
 
   Theorem preservation_case_select :
     forall H L sigma ann x y f t C FM fmVal o,
@@ -2072,6 +2357,66 @@ Section Preservation.
 
   (* Qed. *)
 
+  Theorem preservation_case_assign_heap H L x y f z t C FM o sigma envVal ann:
+    forall witn: is_not_box envVal,
+      WF_Frame' H (ann_frame (sframe L t_let x <- (FieldAssignment y f z) t_in (t)) ann) sigma ->
+      Heap_okP H ->
+      p_env.func L y = Some (envRef o) ->
+      p_heap.func H o = Some (obj C FM) ->
+      p_env.func L z = Some envVal ->
+      (* isTerm t -> *)
+      (Heap_dom_okP (p_heap.updatePartFunc
+                   H o
+                   (obj C (p_FM.updatePartFunc FM f (env2fm envVal witn))))
+      ).
+  Admitted.
+  
+
+  (*
+1 subgoal, subgoal 1 (ID 8710)
+  
+  P : Program
+  H : p_heap.PartFunc
+  H' : Heap_type
+  L, L' : Env_type
+  t' : ExprOrTerm
+  sigma : typecheck_type
+  ann : annotation_type
+  heap_dom_ok : Heap_dom_okP H
+  t : ExprOrTerm
+  x : VarName_type
+  y, z, f : p_gamma.A
+  X : WF_Frame' H
+        (ann_frame (sframe L t_let x <- FieldAssignment y f z t_in (t)) ann)
+        sigma
+  asm0 : Heap_okP H
+  X0 : Reduction_SF' ( # H, L, t_let x <- FieldAssignment y f z t_in (t) ! )
+         ( # H', L', t ! )
+  o : Ref_type
+  H0 : p_heap.PartFunc
+  L0 : p_env.PartFunc
+  C : class
+  FM : FM_type
+  envVal : env_Range_type
+  witn : is_not_box envVal
+  H7 : isTerm t
+  H10 : p_env.func L y = Some (envRef o)
+  H11 : p_heap.func H o = Some (obj C FM)
+  H12 : In f (p_FM.domain FM)
+  H13 : p_env.func L z = Some envVal
+  H1 : H0 = H
+  H2 : L0 = L
+  H6 : p_heap.updatePartFunc H o
+         (obj C (p_FM.updatePartFunc FM f (env2fm envVal witn))) = H'
+  H8 : p_env.updatePartFunc L x envVal = L'
+  ============================
+   Heap_dom_okP
+     (p_heap.updatePartFunc H o
+        (obj C (p_FM.updatePartFunc FM f (env2fm envVal witn))))
+
+
+*)
+
 
   Theorem single_frame_WF_ENV_preservation :
     forall H H' L L' t t' sigma ann,
@@ -2197,7 +2542,7 @@ Section Preservation.
     clear L0 H0 H2 H1.
     apply (preservation_case_select H L sigma ann x y f t C FM fmVal o X asm0 H10 H11 H12 H5).
     rewrite <- H7; exact asm0.
-    admit.
+    rewrite <- H7; exact heap_dom_ok.
 
     (* Case ASSIGN, let x = (y.f = z) in t *)
 
@@ -2215,8 +2560,10 @@ Section Preservation.
     exact (preservation_case_assign _ _ _ _ _ _ _ _ _ _ _ _ _ _ X asm0 H10
                                     H11 H13
           ).
-    admit.
-  Admitted.
+    exact (preservation_case_assign_heap _ _ _ _ _ _ _ _ _ _ _ _ _ _ X asm0 H10
+                                    H11 H13
+          ).
+  Qed.
 
   
 End Preservation.

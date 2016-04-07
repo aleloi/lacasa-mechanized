@@ -49,6 +49,11 @@ Section Typing.
       forall gamma C,
         TypeChecks gamma eff_epsilon (New C) (typt_class C)
 
+  | T_Box :
+      forall gamma C,
+        ocap P C ->
+        TypeChecks gamma eff_ocap (Box C) (typt_box C)
+
 
   | T_Invoke :
       forall gamma C y m z md eff sigma , (* TODO recursion and well-formedness*)
