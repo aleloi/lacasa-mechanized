@@ -640,7 +640,7 @@ Section Preservation.
     rewrite half_6_a_ii_first.
     unfold subtypeP.
     apply classSub.
-    apply subclass_refl. (* admitted (actually not defined) *)
+    apply subclass_refl. 
     set (lem := proj1 (p_gamma.updatedFuncProp Gamma x (typt_class C) x) (eq_refl _)).
     rewrite half_6 in lem.
     inversion lem.
@@ -1152,7 +1152,7 @@ Section Preservation.
     rewrite half_6_a_ii_first.
     unfold subtypeP.
     apply classSub.
-    apply subclass_refl. (* admitted (actually not defined) *)
+    apply subclass_refl. 
     set (lem := proj1 (p_gamma.updatedFuncProp Gamma x (typt_box C) x) (eq_refl _)).
     rewrite half_6 in lem.
     inversion lem.
