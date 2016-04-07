@@ -19,7 +19,7 @@ Section Reductions.
                                       (at level 0).
   Notation heapUpd := p_heap.updatePartFunc.
 
-  Notation fieldsP := fields .
+  Notation fieldsP := (fields P).
 
   (* Notation "$$ C FM $$" := (obj C FM) (at level 201). *)
 
