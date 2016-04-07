@@ -223,7 +223,7 @@ Module Update (T BT: Typ) (Import nc: Nice T).
 
   
     
-  Theorem newPartFuncDomain (dom: list A) (val: B) :
+  Theorem newPartFuncDomain (dom: list A) (val: B):
     domain (newPartFunc dom val) = dom.
     simpl.
     auto.

@@ -90,12 +90,12 @@ Section Heap.
       }.
 
   Definition Heap_dom_ok H : Prop :=
-    forall o C FM,
+    forall (o: p_heap.A) C FM,
       p_heap.func H o = Some (obj C FM) ->
       fieldsP C (p_FM.domain FM).
 
   Definition Heap_ok H : Prop :=
-    forall o C FM,
+    forall (o: p_heap.A) C FM,
       p_heap.func H o = Some (obj C FM) ->
       Heap_obj_ok H C FM.
 
