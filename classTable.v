@@ -54,7 +54,12 @@ Section MethodsAndFields.
     forall C,
       fields C (fieldsList C).
   Admitted.
-    
+
+  Theorem fld_in_flds C f fields_lst:
+    fld C f -> 
+    fields C fields_lst ->
+    In f fields_lst.
+  Admitted.
 
   Definition subclass : class -> class -> Prop :=
     fun _ _ => classDecls P = nil.
