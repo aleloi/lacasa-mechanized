@@ -326,13 +326,91 @@ Section Progress.
     admit.
 
     (* New *)
-    admit.
+    apply inl; apply inl.
+    destruct (progress_SF_case_new
+                P
+                H L c t2 v sigma ann
+                WF_F'' heap_okH heap_dom_okH)
+      as [sf_config sf_reduction];
+    destruct sf_config as [H' frame].
+    exists (H', ann_frame frame ann :: FS).
+    destruct frame.
+    apply (E_StackFrame P H H').
+    assumption.
 
     (* Box *)
-    admit.
+    apply inl; apply inl.
+    destruct (progress_SF_case_box
+                P
+                H L c t2 v sigma ann
+                WF_F'' heap_okH heap_dom_okH)
+      as [sf_config sf_reduction];
+    destruct sf_config as [H' frame].
+    exists (H', ann_frame frame ann :: FS).
+    destruct frame.
+    apply (E_StackFrame P H H').
+    assumption.
 
     (* Open *)
-    admit.
+
+    rename v0 into y.
+    rename v1 into z.
+    destruct tTerm as [t1Term t2Term].
+
+    assert (
+        (p_env.func L y = Some envNull) +
+        {o : Ref_type & p_env.func L y = Some (envBox o) /\
+             In o (p_heap.domain H)
+        }) as L_props.
+      
+
+    clear F WF_F'' X t1Term t2Term heap_dom_okH FS l.
+    inversion typ_F_sigma.
+    clear H2 tau H5 t H3 eff0 H1 gamma H0 typ_F_sigma x X0 v e H4.
+       
+    inversion X.
+    rewrite <- H2 in *; clear H2 H5 t H4 y0 H3 x eff0 H1 gamma H0 X1 X sigma1.
+    inversion X0.
+    clear H4 sigma1 H0 x H2 eff0 H1 gamma X0 sigma0 sigma eff ann.
+    
+    set (w' := fst w). 
+    set ( lem := w' y (p_gamma.in_part_func_domain _ _ _ H3)).
+    destruct (p_env.in_part_func_domain_conv _ _ lem).
+    clear lem w'.
+
+    apply snd in w.
+    apply (fun f => f y (typt_box C) H3) in w.
+    inversion w.
+    destruct X.
+    apply inl; assumption.
+    destruct s; destruct x0; destruct y0; destruct a; destruct H1; rewrite H1 in H3; discriminate.
+    destruct X; destruct x0; destruct y0; destruct a; destruct H1.
+    apply inr. rename r into o. exists o.
+    split; assumption.
+
+    destruct L_props.
+    apply inr.
+    clear l.
+    exists (v, ann, L, y, Open y z t1, t2, FS).
+    split. assumption.
+    split. auto.
+    split. assumption.
+    split. reflexivity.
+    reflexivity.
+    
+    apply inl; apply inl.
+    destruct s as [o L_y_o_prop].
+    exists (H,
+            (ann_frame (sframe (p_env.emptyPartFunc +++ z --> envBox o) t1) ann_epsilon) ::
+            (ann_frame (sframe ( L +++ v --> (envBox o) ) t2)
+                          ann) :: FS).
+    apply (E_Open P H L).
+    assumption.
+    assumption.
+    destruct L_y_o_prop.
+    assumption.
+    destruct L_y_o_prop.
+    assumption.
 
     (* let let *)
     inversion tTerm.
