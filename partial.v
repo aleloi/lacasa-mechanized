@@ -423,7 +423,15 @@ Module Update (T BT: Typ) (Import nc: Nice T).
     firstorder.
     rewrite H0 in H; discriminate H.
   Qed.
-      
+
+  Lemma in_part_func_domain_conv p a (witn: In a (domain p)) :
+    {b | func p a = Some b}.
+    case_eq (func p a).
+    intros b _.    exists b; reflexivity.
+    intros is_eq.
+    set (lem := fDomainCompat p a).
+    firstorder.
+  Qed.
 End Update.
 
 (* Print Update. *)

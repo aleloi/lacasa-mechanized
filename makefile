@@ -1,4 +1,4 @@
-all: partial.vo namesAndTypes.vo syntax.vo classTable.vo heap.vo sframe.vo reductions.vo typing.vo wf_env.vo preservation.vo fs_preservation.vo ocap.vo
+all: partial.vo namesAndTypes.vo syntax.vo classTable.vo heap.vo sframe.vo reductions.vo typing.vo wf_env.vo preservation.vo fs_preservation.vo ocap.vo progress_sf.vo progress.vo
 
 %.vo : %.v
 	coqc $<
@@ -6,6 +6,7 @@ all: partial.vo namesAndTypes.vo syntax.vo classTable.vo heap.vo sframe.vo reduc
 
 
 ## coqdep ./ *v >> makefile
+
 classTable.vo classTable.glob classTable.v.beautified: classTable.v syntax.vo partial.vo namesAndTypes.vo
 classTable.vio: classTable.v syntax.vio partial.vio namesAndTypes.vio
 fs_preservation.vo fs_preservation.glob fs_preservation.v.beautified: fs_preservation.v syntax.vo partial.vo heap.vo classTable.vo sframe.vo reductions.vo typing.vo namesAndTypes.vo preservation.vo wf_env.vo
@@ -22,6 +23,10 @@ partial.vo partial.glob partial.v.beautified: partial.v
 partial.vio: partial.v
 preservation.vo preservation.glob preservation.v.beautified: preservation.v syntax.vo partial.vo heap.vo classTable.vo sframe.vo reductions.vo typing.vo namesAndTypes.vo wf_env.vo
 preservation.vio: preservation.v syntax.vio partial.vio heap.vio classTable.vio sframe.vio reductions.vio typing.vio namesAndTypes.vio wf_env.vio
+progress.vo progress.glob progress.v.beautified: progress.v syntax.vo partial.vo heap.vo classTable.vo sframe.vo reductions.vo typing.vo namesAndTypes.vo wf_env.vo
+progress.vio: progress.v syntax.vio partial.vio heap.vio classTable.vio sframe.vio reductions.vio typing.vio namesAndTypes.vio wf_env.vio
+progress_sf.vo progress_sf.glob progress_sf.v.beautified: progress_sf.v syntax.vo partial.vo heap.vo classTable.vo sframe.vo reductions.vo typing.vo namesAndTypes.vo wf_env.vo
+progress_sf.vio: progress_sf.v syntax.vio partial.vio heap.vio classTable.vio sframe.vio reductions.vio typing.vio namesAndTypes.vio wf_env.vio
 reductions.vo reductions.glob reductions.v.beautified: reductions.v syntax.vo partial.vo heap.vo classTable.vo sframe.vo namesAndTypes.vo ocap.vo
 reductions.vio: reductions.v syntax.vio partial.vio heap.vio classTable.vio sframe.vio namesAndTypes.vio ocap.vio
 sframe.vo sframe.glob sframe.v.beautified: sframe.v syntax.vo partial.vo heap.vo classTable.vo namesAndTypes.vo

@@ -1729,7 +1729,7 @@ Section Preservation.
     rewrite H0 in H3; inversion H3.
     set (stays := p_heap.staysInDomain H o_y (obj C' FM') o_z H0).
     assert (heap_typeof H' o_z stays = heap_typeof H o_z H0) as _6_iv.
-    case_eq (v_eq_dec o_z o_y).
+    case_eq (rn_eq_dec o_z o_y).
     intros.
     clear H1; rewrite e0 in *.
     transitivity C'.
@@ -1875,7 +1875,7 @@ Section Preservation.
 
     (* 7 e iii *)
     assert (heap_typeof H o_s x0 = heap_typeof H' o_s stays) as _7_e_iii.
-    case_eq (v_eq_dec o_s o_y).
+    case_eq (rn_eq_dec o_s o_y).
     intros.
     clear H0. rewrite <- e in *.
     transitivity C'.
@@ -1960,7 +1960,7 @@ Section Preservation.
     (* rewrite H8. *)
     (* assumption. *)
 
-    case_eq (v_eq_dec o_s o_y).
+    case_eq (rn_eq_dec o_s o_y).
     intros.
     clear H8. 
     transitivity C'.
@@ -2036,7 +2036,7 @@ Section Preservation.
     assumption.
     assert (heap_typeof H o_s H0  = heap_typeof H' o_s H8) as _7_f_ii.
 
-    case_eq (v_eq_dec o_s o_y).
+    case_eq (rn_eq_dec o_s o_y).
     intros.
     rewrite e in *.
     clear H9.
@@ -2126,7 +2126,7 @@ Section Preservation.
     rename o into o_y.
     rename o0 into o.
 
-    case_eq (v_eq_dec o_y o).
+    case_eq (rn_eq_dec o_y o).
     intros; clear H0.
     rewrite <- e in *.
     set (lem := proj1 (p_heap.updatedFuncProp H o_y (obj C FM') _) (eq_refl _)).

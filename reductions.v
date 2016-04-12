@@ -142,8 +142,8 @@ Section Reductions.
                   Reduction_FS (H, (ann_frame (sframe L (Var x)) (ann_var y)) :: F :: FS)
                                (H, updFrame F y envVal :: FS)
 
-  | E_Return2 : forall H F FS,
-                  Reduction_FS (H, (ann_frame F ann_epsilon) :: FS)
+  | E_Return2 : forall H L x FS,
+                  Reduction_FS (H, (ann_frame (sframe L (Var x)) ann_epsilon) :: FS)
                                (H, FS)
                                
   | E_Open : forall H L x1 x2 y t1 t2 ann FS o,

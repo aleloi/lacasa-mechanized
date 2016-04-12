@@ -9,6 +9,7 @@ Require Import sframe.
 Require Import reductions.
 Require Import typing.
 Require Import namesAndTypes.
+Require Import progress_sf.
 
 Require Import wf_env.
 
@@ -24,15 +25,14 @@ Section Progress.
   Definition ftypeP := ftype P.
   Definition t_frame1' := t_frame1 P.
   Definition WF_Frame' := WF_Frame P.
+  Definition WF_FS' := WF_FS P.
 
   Definition Reduction_SF' := Reduction_SF P .
+  Definition Reduction_FS' := Reduction_FS P .
   Definition fieldsP := fields P.
   Definition TypeChecksP := TypeChecks P.
   Definition Heap_okP := Heap_ok P.
   Definition Heap_dom_okP := Heap_dom_ok P .
-
-  Print sfconfig_type.
-  Print ann_frame.
 
   Notation "( p +++ a --> b )" := (p_env.updatePartFunc
                                      p a b) (at level 0).
@@ -41,311 +41,303 @@ Section Progress.
                                               H o obj)
                                       (at level 0).
 
-  Theorem progress_SF_case_new :
-    forall H L C t x sigma ann,
-      WF_Frame' H (ann_frame
-                     (sframe L (t_let x <- New C t_in (t)))
-                     ann) sigma ->
+  Print Heap_type.
+
+  Definition y_dereference e y : Prop :=
+    match e with
+      | FieldSelection y' f => y = y'
+      | FieldAssignment y' f z => y = y'
+      | MethodInvocation y' m z => y = y'
+      | Open y' z t => y = y'
+      | _ => False
+    end.
+
+
+  Require Import Coq.Lists.List.
+
+  Theorem progress_thm :
+    forall H FS,
+
+      WF_FS' None H FS ->
       Heap_okP H ->
       Heap_dom_okP H ->
-      { frame : sfconfig_type
-                  & Reduction_SF'
-                  (# H, L, t_let x <- New C t_in (t) !)
-                  frame}.
-    Proof.
-      intros.
-      inversion X.
-      clear H2 H4 L0 H3 t0 H6 ann0 H7 sigma0 H5.
+      FS <> nil -> (* replace with H, a |- FS *)
 
-      (* define flds *)
-      set (flds := fieldsList P C).
-      set (C_flds := fieldsListIsFields P C).
-      fold flds in C_flds.
-      set (FM := p_FM.newPartFunc flds FM_null).
-            
-      destruct (ConcreteNamesAndTypes.rn.constructFresh
-                  (p_heap.domain H))
-        as [o o_fresh_prop].
-      
-      exists ( # (H +*+ o --> (obj C FM)),
-               ( L +++ x --> envRef o ) , t ! ).
-      apply (E_New _ _ _ _ _ _  _ _  flds).
-      inversion H8.
-      assumption; clear H2 H3.
-      assumption.
-      assumption.
-      reflexivity.
-    Qed.
+      (* exists reduction *)
+      { H'_FS': Heap_type * (list ann_frame_type)
+                              &
+                              let (H', FS') := H'_FS' in 
+                              Reduction_FS' (H, FS) (H', FS')
+              
+      } +
 
-    Theorem progress_SF_case_box :
-    forall H L C t x sigma ann,
-      WF_Frame' H (ann_frame
-                     (sframe L (t_let x <- Box C t_in (t)))
-                     ann) sigma ->
-      Heap_okP H ->
-      Heap_dom_okP H ->
-      { frame : sfconfig_type
-                  & Reduction_SF'
-                  (# H, L, t_let x <- Box C t_in (t) !)
-                  frame}.
-    Proof.
-      intros.
-      inversion X.
-      clear H2 H4 L0 H3 t0 H6 ann0 H7 sigma0 H5.
+      (* frame stack has a single Var frame *)
+      { x_l_L : VarName_type
+                * annotation_type
+                * Env_type
+                    &
+                    match x_l_L with
+                      | (x, l, L) => 
+                        FS = (ann_frame (sframe L (Var x))  l) :: nil
+                    end
+      } +
 
-      (* define flds *)
-      set (flds := fieldsList P C).
-      set (C_flds := fieldsListIsFields P C).
-      fold flds in C_flds.
-      set (FM := p_FM.newPartFunc flds FM_null).
-            
-      destruct (ConcreteNamesAndTypes.rn.constructFresh
-                  (p_heap.domain H))
-        as [o o_fresh_prop].
-      
-      exists ( # (H +*+ o --> (obj C FM)),
-               ( L +++ x --> envBox o ) , t ! ).
-      apply (E_Box _ _ _ _ _ _  _ _  flds).
-      inversion H8.
-      assumption; clear H2 H3.
-      assumption.
-      assumption.
-      reflexivity.
-    Qed.
+      (* null dereference *)
+
+      { x_l_L_y_e_t_FS' :
+          VarName_type
+          * annotation_type
+          * Env_type
+          * VarName_type
+          * ExprOrTerm
+          * ExprOrTerm
+          * (list ann_frame_type)
+              &
+              match x_l_L_y_e_t_FS' with
+                | (x, l, L, y, e, t, FS') =>
+                  (isTerm t) /\  (isExpr e) /\ (p_env.func L y = Some envNull ) /\
+                  (y_dereference e y) /\
+                  FS = (ann_frame
+                          (sframe L (
+                                    t_let x <- e t_in t
+                                  ))  l) :: FS'
+              end
+      }.
+
+    intros.
+    destruct FS.
+    induction (H2 (eq_refl _)).
+    rename a into F; clear H2.
+    assert {sigma : typecheck_type & WF_Frame' H F sigma }.
+    inversion X.
+    exists sigma; assumption.
+    exists tau; assumption.
+    
+    destruct F as [frm l].
+    destruct frm as [L' t].
+    set (F := (ann_frame (sframe L' t) l)).
+    fold F in X0, X.
+    destruct X0 as [sigma WF_F].
+    set (WF_F'' := WF_F).
+    destruct WF_F as [H Gamma eff t' L'' ann sigma' tTerm typ_F_sigma].
+    rename sigma' into sigma.
+    clear L'.
+    rename L'' into L'.
+    clear t; rename t' into t.
+    rename H0 into heap_okH; rename H1 into heap_dom_okH.
+    destruct t.
+    induction tTerm.
+    destruct ann.
+    apply inl.
+    apply inl.
+    exists (H, FS).
+    apply E_Return2.
+    
+    rename v into y.
+    assert ({envVal | p_env.func L' y = Some envVal}).
+    inversion typ_F_sigma.
+    clear H1 H2 H0 H4 gamma eff0 x sigma0 heap_dom_okH heap_okH X FS l .
+
+    set (w' := fst w).
+    apply (fun f => f y ) in w'.
+    assert (In y (p_gamma.domain Gamma)).
+    apply (p_gamma.in_part_func_domain _ _ sigma); assumption.
+    apply (fun f => f H0) in w'.
+    apply p_env.in_part_func_domain_conv; assumption.
+
+    destruct X0 as [envVal L'y_eq].
+    set (G := ann_frame (sframe L' (Var y)) (ann_var v0)).
+    fold G in X.
+    destruct FS.
+    apply inl.
+    apply inr.
+    exists (y, (ann_var v0), L'); reflexivity.
+
+    rename a into F.
+    apply inl. apply inl.
+    exists (H, updFrame F v0 envVal :: FS).
+    apply E_Return1.
+    assumption.
+
+    induction tTerm.
+    induction tTerm.
+    induction tTerm.
+    induction tTerm.
+    induction tTerm.
+    induction tTerm.
+    rename L' into L.
+
+    set (F := ann_frame (sframe L t_let v <- t1 t_in (t2)) ann).
+    fold F in X, WF_F''.
+
+    destruct t1.
+    
+    apply inl; apply inl.
+    destruct (progress_SF_case_null
+                P
+                H L t2 v sigma ann WF_F'' heap_okH heap_dom_okH)
+      as [sf_config sf_reduction];
+      destruct sf_config as [H' frame].
+    
+    exists (H', ann_frame frame ann :: FS).
+    destruct frame.
+    apply (E_StackFrame P H H').
+    assumption.
 
 
-    Theorem progress_SF_case_var :
-    forall H L t x y sigma ann,
-      WF_Frame' H (ann_frame
-                     (sframe L (t_let x <- (Var y) t_in t))
-                     ann) sigma ->
-      Heap_okP H ->
-      Heap_dom_okP H ->
-      { frame : sfconfig_type
-                  & Reduction_SF'
-                  (# H, L, (t_let x <- (Var y) t_in t) !)
-                  frame}.
-    Proof.
-      intros.
-      inversion X.
-      clear H2 H4 L0 H3 t0 H6 ann0 H7 sigma0 H5.
-      
-      assert ({null_ref_box | p_env.func L y = Some null_ref_box}).
-      clear H8 H1 H0 X ann.
-      inversion X0.
-      clear H0 gamma H1 eff0 x0 H3 t0 H5 tau H2 e H4.
-      inversion X.
-      clear H1 eff0 x0 H4 sigma1 H2 H0 X X2 gamma X0.
-      apply fst in X1.
-      unfold gamma_env_subset in X1.
-      apply (fun f => f y) in X1.
-      apply (fun f => f (p_gamma.in_part_func_domain _ _ _ H3)) in X1.
-      case_eq (p_env.func L y).
-      intros L_y L_y_eq.
-      exists L_y; reflexivity.
-      intro.
-      set (lem := p_env.fDomainCompat L y).
-      firstorder.
-      
-      destruct X2 as [null_ref_box L_y_is_null_ref_box].
-      
-      exists ( # H , (L +++ x --> null_ref_box) , t ! ).
-      apply E_Var.
-      inversion H8.
-      assumption.
-      assumption.
-    Qed.
+    apply inl; apply inl.
+    destruct (progress_SF_case_var
+                P
+                H L t2 v v0 sigma ann
+                WF_F'' heap_okH heap_dom_okH)
+      as [sf_config sf_reduction];
+      destruct sf_config as [H' frame].
+    
+    exists (H', ann_frame frame ann :: FS).
+    destruct frame.
+    apply (E_StackFrame P H H').
+    assumption.
 
-    Theorem progress_SF_case_null :
-    forall H L t x sigma ann,
-      WF_Frame' H (ann_frame
-                     (sframe L (t_let x <- Null t_in t))
-                     ann) sigma ->
-      Heap_okP H ->
-      Heap_dom_okP H ->
-      { frame : sfconfig_type
-                  & Reduction_SF'
-                  (# H, L, (t_let x <- Null t_in t) !)
-                  frame}.
-    Proof.
-      intros.
+    
+    (* Prove y in L: *)
+    rename v0 into y.
+    rename v into x.
+    assert (In y (p_env.domain L)).
+    clear WF_F'' tTerm heap_okH heap_dom_okH X FS.
+    inversion typ_F_sigma.
+    inversion X.
+    clear H9 H10 H6 H8 H7 witn f0 x1 eff1 gamma0 H2 H5 H5 H4 H3 H1 H0 X0 X t tau.
+    clear x0 sigma0 e eff0 gamma.
+    apply fst in w.
+    exact (w y (p_gamma.in_part_func_domain _ _ _ H11)).
+    destruct (p_env.in_part_func_domain_conv _ _ H0).
+    clear H0.
 
-      exists (# H, (L +++ x --> envNull), t !).
-      apply E_Null.
-      
-      inversion X.
-      clear H2 H4 L0 H3 t0 H6 ann0 H7 sigma0 H5 X0 X1 eff Gamma H1 H0 X ann
-      sigma P H L .
-      inversion H8.
-      assumption.
-    Qed.
+    destruct x0.
+    apply inr.
+    exists (x, ann, L, y, FieldSelection y f, t2, FS).
+    split.
+    inversion tTerm; assumption.
+    split.
+    simpl.
+    auto.
+    split.
+    assumption.
+    split.
+    simpl.
+    reflexivity.
+    reflexivity.
 
-    Theorem progress_SF_case_field :
-    forall H L t x y f sigma ann,
-      WF_Frame' H (ann_frame
-                     (sframe L (t_let x <- (FieldSelection y f) t_in t))
-                     ann) sigma ->
-      p_env.func L y <> Some envNull ->
-      Heap_okP H ->
-      Heap_dom_okP H ->
-      { frame : sfconfig_type
-                  & Reduction_SF'
-                  (# H, L, (t_let x <- (FieldSelection y f) t_in t) !)
-                  frame}.
-      intros.
-      rename H0 into L_y_not_null.
-      rename H2 into heap_dom_ok.
-      inversion X.
-      inversion H7.
-      rename H9 into t_is_term.
-      clear H8 H7.
-      clear H0 H2  H4 L0 H3 t0 H6 ann0 sigma0 H5 H4.
-      assert ({C | p_gamma.func Gamma y = Some (typt_class C)}).
-      clear H1  X ann.
-      inversion X0.
-      clear  H0 gamma H1 eff0 x0 H3 t0 H5 tau H2 e H4 x X0 X2 sigma .
-      inversion X.
-      clear H0 eff0 x f0 H1 H2  H4 gamma H3 sigma0 X witn t t_is_term f.
-      exists C; assumption.
-      destruct X2 as [C gamma_y_is_C].
+    assert (p_env.func L y <> Some envNull).
+    simplify_eq.
+    rewrite H0 in e; discriminate.
+    apply inl; apply inl.
+    destruct (progress_SF_case_field
+                P
+                H L t2 x y f sigma ann
+                WF_F'' H0 heap_okH heap_dom_okH)
+      as [sf_config sf_reduction];
+      destruct sf_config as [H' frame].
+    
+    exists (H', ann_frame frame ann :: FS).
+    destruct frame.
+    apply (E_StackFrame P H H').
+    assumption.
 
-      Require Import Coq.Lists.List.
+    assert (p_env.func L y <> Some envNull).
+    simplify_eq.
+    rewrite H0 in e; discriminate.
+    apply inl; apply inl.
+    destruct (progress_SF_case_field
+                P
+                H L t2 x y f sigma ann
+                WF_F'' H0 heap_okH heap_dom_okH)
+      as [sf_config sf_reduction];
+      destruct sf_config as [H' frame].
+    
+    exists (H', ann_frame frame ann :: FS).
+    destruct frame.
+    apply (E_StackFrame P H H').
+    assumption.
 
-      assert ({o | p_env.func L y = Some (envRef o) /\
-                   In o (p_heap.domain H)
-              }).
+    rename v0 into y.
+    rename v into x.
+    assert (In y (p_env.domain L)).
+    clear WF_F'' tTerm heap_okH heap_dom_okH X FS.
+    inversion typ_F_sigma.
+    inversion X.
+    clear H9 H10 H6 H8 H7 witn f0 x1 eff1 gamma0 H2 H5 H5 H4 H3 H1 H0 X0 X t tau H11.
+    inversion X1.
+    clear x0 sigma0 e eff0 gamma witn0 H5 H4 H0 H2 H1 witn f0 x1 eff1 gamma0.
+    clear H13 X1 H12 D C y0.
+    apply fst in w.
+    exact (w y (p_gamma.in_part_func_domain _ _ _ H3)).
+    destruct (p_env.in_part_func_domain_conv _ _ H0).
+    clear H0.
 
-      destruct X1 as [subset L_gamma_compat].
-      unfold gamma_env_subset in subset.
-      apply (fun f => f y) in subset.
-      apply (fun f => f (p_gamma.in_part_func_domain _ _ _ gamma_y_is_C)) in subset.
-      apply (fun f => f y (typt_class C) gamma_y_is_C) in L_gamma_compat.
-      
-      case_eq (p_env.func L y).
-      intros L_y L_y_eq.
-      destruct L_y.
-      firstorder.
-      exists r. split. reflexivity.
+    destruct x0.
+    apply inr.
+    exists (x, ann, L, y, FieldAssignment y f v1, t2, FS).
+    split.
+    inversion tTerm; assumption.
+    split.
+    simpl.
+    auto.
+    split.
+    assumption.
+    split.
+    simpl.
+    reflexivity.
+    reflexivity.
 
-      destruct L_gamma_compat.
-      destruct s.
-      firstorder.
-      destruct s as [aa bb]; destruct aa as [cc oo]; destruct bb as [aaa bbb];
-      destruct bbb as [aaaa bbbb].
-      rewrite L_y_eq in aaaa.
-      inversion aaaa.
-      rewrite H2 in *.
-      assumption.
-      
-      destruct s as [aa bb]; destruct aa as [cc oo]; destruct bb as [aaa bbb];
-      destruct bbb as [aaaa bbbb]; destruct bbbb as [aaaaa bbbbb].
-      rewrite gamma_y_is_C in aaaaa.
-      discriminate.
+    assert (p_env.func L y <> Some envNull).
+    simplify_eq.
+    rewrite H0 in e; discriminate.
+    apply inl; apply inl.
+    destruct (progress_SF_case_assign
+                P
+                H L t2 x y f v1 sigma ann
+                WF_F'' H0 heap_okH heap_dom_okH)
+      as [sf_config sf_reduction];
+      destruct sf_config as [H' frame].
+    
+    exists (H', ann_frame frame ann :: FS).
+    destruct frame.
+    apply (E_StackFrame P H H').
+    assumption.
 
-      destruct L_gamma_compat.
-      destruct s.
-      firstorder.
-      destruct s as [aa bb]; destruct aa as [cc oo]; destruct bb as [aaa bbb];
-      destruct bbb as [aaaa bbbb].
-      rewrite L_y_eq in aaaa; discriminate.
+    assert (p_env.func L y <> Some envNull).
+    simplify_eq.
+    rewrite H0 in e; discriminate.
+    apply inl; apply inl.
+    destruct (progress_SF_case_assign
+                P
+                H L t2 x y f v1 sigma ann
+                WF_F'' H0 heap_okH heap_dom_okH)
+      as [sf_config sf_reduction];
+      destruct sf_config as [H' frame].
+    
+    exists (H', ann_frame frame ann :: FS).
+    destruct frame.
+    apply (E_StackFrame P H H').
+    assumption.
 
-      destruct s as [aa bb]; destruct aa as [cc oo]; destruct bb as [aaa bbb];
-      destruct bbb as [aaaa bbbb]; destruct bbbb as [aaaaa bbbbb].
-      rewrite gamma_y_is_C in aaaaa.
-      discriminate.
+    (* Method invocation *)
+    admit.
 
-      intro.
-      set (lem := p_env.fDomainCompat L y).
-      firstorder.
+    (* New *)
+    admit.
 
-      destruct X2 as [o L_y_i_o].
+    (* Box *)
+    admit.
 
-      inversion X0.
-      clear tau H3 t0 H6 e H5 x0 H4 eff0 H2 gamma H0 X3.
-      inversion X2.
-      clear  H5 f0 H0 x0 H3 eff0 H2 gamma.
-      clear H4 X2 sigma0.
-      rewrite  gamma_y_is_C in H6.
-      inversion H6.
-      rewrite <- H2 in *.
-      clear C0 H2 H6.
-      rename C into C'.
+    (* Open *)
+    admit.
 
-      destruct X1 as [_ L_gamma_compat].
-      apply (fun f => f y (typt_class C') gamma_y_is_C) in L_gamma_compat.
-      destruct L_y_i_o as [L_y_i_o o_in_H].
-      assert ({C | heap_typeof H o o_in_H = C /\
-                   subclass P C C'
-              }).
-      
-      destruct L_gamma_compat.
-      destruct s.
-      firstorder.
-      destruct s as [aa bb]; destruct aa as [cc oo]; destruct bb as [aaa bbb];
-      destruct bbb as [aaaa bbbb]; destruct bbbb as [aaaaa bbbbb].
-      rewrite gamma_y_is_C in aaaaa.
-      inversion aaaaa.
-      rewrite <- H2 in *.
-      clear H2 aaaaa cc.
-      rewrite L_y_i_o in aaaa; inversion aaaa.
-      rewrite  H2 in *.
-      clear aaaa.
-      exists (heap_typeof H oo aaa).
-      split.
+    (* let let *)
+    inversion tTerm.
+    induction H0.
 
-      set (C := heap_typeof H o o_in_H).
-      destruct (heap_typeof_impl P H o C o_in_H (eq_refl _))
-        as [FM H_o_value].
-      rewrite H2 in H_o_value.
-      symmetry.
-      apply (heap_typeof_same P _ _ _ FM H_o_value).
-      unfold wf_env.subtypeP in bbbbb.
-      inversion bbbbb.
-      clear D H0 H3      .
-      assumption.
-      
-      destruct s as [aa bb]; destruct aa as [cc oo]; destruct bb as [aaa bbb];
-      destruct bbb as [aaaa bbbb]; destruct bbbb as [aaaaa bbbbb].
-      rewrite gamma_y_is_C in aaaaa.
-      discriminate.
-
-      unfold Heap_dom_okP in heap_dom_ok.
-      destruct X1 as [C heap_tpe_tmp].
-      destruct heap_tpe_tmp as [typeof_o_C C_sub_C'].
-      
-      destruct (heap_typeof_impl P _ _ _ o_in_H typeof_o_C) as [FM H_o_value].
-      
-      Print Heap_dom_ok .
-
-      apply (fun f => f o C FM ) in heap_dom_ok.
-      apply (fun f => f H_o_value) in heap_dom_ok.
-      unfold heap.fieldsP in heap_dom_ok.
-
-      (* goal: *)
-      assert (typing.fldP P C f).
-      apply (field_subclass P C C'); assumption.
-      
-      clear L_gamma_compat X0 C' gamma_y_is_C  witn C_sub_C' X L_y_not_null
-            H1   Gamma eff   .
-
-      set (lem := fld_in_flds P C f (p_FM.domain FM) H0 heap_dom_ok).
-
-      assert ({fmVal | p_FM.func FM f = Some fmVal}).
-      case_eq (p_FM.func FM f).
-      intro fmVal; exists fmVal; reflexivity.
-      intro.
-      set (lemlem := p_FM.fDomainCompat FM f).
-      firstorder.
-
-      destruct X as [fmVal FM_f].
-      exists      
-      ( # H,
-        ( L +++ x --> (fm2env fmVal) ) , t ! ).
-
-      apply (E_Field _ _ _ o _ _ _ _
-                     C FM _ t_is_term L_y_i_o H_o_value
-                     FM_f
-            ).
-    Qed.
+  Admitted.
 
 End Progress.
