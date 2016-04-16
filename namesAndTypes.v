@@ -16,9 +16,6 @@ Module Type AbstractNamesAndTypes.
   Declare Module mn : Nice MethodNameM.
   Declare Module cn : Nice ClassNameM.
   Declare Module rn : Nice RefM.
-
-
-  
   
 End AbstractNamesAndTypes.
 

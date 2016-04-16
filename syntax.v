@@ -3,44 +3,23 @@ Require Import namesAndTypes.
 
 Import ConcreteEverything.
 
+Inductive Expr := 
+| Null : Expr
+| Var : VarName_type -> Expr
+| FieldSelection : VarName_type -> FieldName_type -> Expr
+| FieldAssignment : VarName_type -> FieldName_type -> VarName_type -> Expr
+| MethodInvocation : VarName_type -> MethodName_type -> VarName_type -> Expr
+| New : class -> Expr
+| Box : class -> Expr
+| Open : VarName_type -> VarName_type -> Term -> Expr
+with 
 
-Inductive ExprOrTerm :=
-| Null : ExprOrTerm
-| Var : VarName_type -> ExprOrTerm
-| FieldSelection : VarName_type -> FieldName_type -> ExprOrTerm
-| FieldAssignment : VarName_type -> FieldName_type -> VarName_type -> ExprOrTerm
-(* MethodInvocation y m z ~ y.m(z) *)
-| MethodInvocation : VarName_type -> MethodName_type -> VarName_type -> ExprOrTerm
-| New : class -> ExprOrTerm
-| Box : class -> ExprOrTerm
+Term :=
+| TVar : VarName_type -> Term
+| TLet : VarName_type -> Expr -> Term -> Term.
 
-(* x .open  y      =>    t *)
-| Open : VarName_type -> VarName_type -> ExprOrTerm -> ExprOrTerm
-| TLet : VarName_type -> ExprOrTerm -> ExprOrTerm -> ExprOrTerm.
 
 Notation "'t_let' x <- e 't_in' t" := (TLet x e t) (at level 0).
-
-Fixpoint isTerm (e: ExprOrTerm) : Prop :=
-  match e with
-    | Var _ => True
-    | TLet _ e t => (fix isExpr (e: ExprOrTerm) : Prop :=
-                       match e with
-                         | TLet _ _ _ => False
-                         | Open _ _ t' => isTerm t'
-                         | _ => True
-                       end
-                    ) e /\ isTerm t
-    | _ => False
-  end.
-
-Definition isExpr (e: ExprOrTerm) : Prop :=
-  match e with
-    | TLet _ _ _ => False
-    | Open _ _ t => isTerm t
-    | _ => True
-  end.
-
-
 
 
 Definition flds := list (FieldName_type * class).
@@ -51,8 +30,7 @@ Record MethDecl : Type := mkMethodDecl {
                               argType: typecheck_type;
                               argName: VarName_type;
                               retType: typecheck_type;
-                              methodBody: ExprOrTerm;
-                              methodBodyIsTerm : isTerm methodBody
+                              methodBody: Term;
                             }.
 
 Record ClassDecl : Type := mkClassDecl {
@@ -64,8 +42,7 @@ Record ClassDecl : Type := mkClassDecl {
 Record Program : Type := mkProgram {
                              classDecls : list ClassDecl;
                              globals : varDefs;
-                             programBody: ExprOrTerm;
-                             programBodyIsTerm : isTerm programBody
+                             programBody: Term;
                            }.
 
 

@@ -22,8 +22,9 @@ Section Ocap.
   Definition globalEnv : Env_type :=
     global_env_lst (globals P).
 
-  Fixpoint noGlobals (env : list VarName_type) (t: ExprOrTerm) : Prop :=
-    match t with
+  
+  Fixpoint noGlobalsExpr (env : list VarName_type) (e: Expr) : Prop :=
+    match e with 
       | Null => True
       | Var x => In x env
       | FieldSelection x _ => In x env
@@ -31,13 +32,17 @@ Section Ocap.
       | MethodInvocation x _ z => In x env /\ In z env
       | New _ => True
       | Box _ => True
-
-      | Open x y t' => In x env /\ noGlobals (y :: env) t'
-      | TLet x e t' => noGlobals env e /\ noGlobals (x :: env) t'
+      | Open x y t' => (In x env) /\ noGlobalsTerm (y :: env) t'
+    end
+  with 
+  noGlobalsTerm (env : list VarName_type) (t: Term) : Prop :=
+    match t with 
+      | TVar x => In x env
+      | TLet x e t' => noGlobalsExpr env e /\ noGlobalsTerm (x :: env) t'
     end.
   
   Definition methodNoGlobals (md: MethDecl) : Prop :=
-    noGlobals (var_name_this :: argName md :: nil) (methodBody md).
+    noGlobalsTerm (var_name_this :: argName md :: nil) (methodBody md).
 
   Definition classDeclNoGlobals (cd: ClassDecl) : Prop :=
     Forall methodNoGlobals (methods cd).
@@ -59,11 +64,20 @@ Section Ocap.
                                                          (cdFields cd) A.
 
   
-  Definition directlyRelatedTerm (t: ExprOrTerm) (A: class) :=
+  Fixpoint directlyRelatedTerm (t: Term) A :=
     match t with
-      | New A' => A = A'
+      | TLet _ e t' => directlyRelatedExpr e A \/ directlyRelatedTerm t' A
+      | _ => False
+    end
+  with
+  directlyRelatedExpr (e: Expr) A :=
+    match e with
+      | New A' => A' = A
+      | Box A' => A' = A
+      | Open _ _ t' => directlyRelatedTerm t' A
       | _ => False
     end.
+  
 
   Definition directlyRelatedMethod (md: MethDecl) A :=
     argType md = typt_class A \/

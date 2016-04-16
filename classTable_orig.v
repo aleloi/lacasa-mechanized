@@ -99,7 +99,7 @@ Section MethodsAndFields.
     admit.
   Admitted.
     
-  Inductive subtype : typecheck_type -> typecheck_type -> Type :=
+  Inductive subtype : typecheck_type -> typecheck_type -> Prop :=
   | classSub : forall C D, subclass C D -> subtype (typt_class C) (typt_class D)
   | boxSub : forall C D, subclass C D -> subtype (typt_box C) (typt_box D)
   | allSub : forall sigma, subtype sigma typt_all.

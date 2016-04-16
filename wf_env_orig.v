@@ -86,27 +86,27 @@ Section WF_Env.
   
   Definition subtypeP := subtype P.
 
-  Definition TypeChecksP := TypeChecksTerm P.
+  Definition TypeChecksP := TypeChecks P.
 
   Local Open Scope type_scope.
 
   
   Definition WF_Var (H: Heap_type) (Gamma: Gamma_type) (L: Env_type) (x: VarName_type):=
     (p_env.func L x = Some envNull) +
-    {C_o : _ &
+    {C_o |
      match C_o with
-       | (C, o) => {witn : _&
-                    (p_env.func L x = Some (envRef o)) *
-                    (p_gamma.func Gamma x = Some (typt_class C)) *
-                    (subtypeP (typt_class (heap_typeof H o witn)) (typt_class C))
+       | (C, o) => {witn |
+                    p_env.func L x = Some (envRef o) /\
+                    p_gamma.func Gamma x = Some (typt_class C) /\
+                    subtypeP (typt_class (heap_typeof H o witn)) (typt_class C)
                    }
      end} +
-    {C_o : _ &
+    {C_o |
      match C_o with
-       | (C, o) => {witn : _ &
-                    (p_env.func L x = Some (envBox o)) *
-                    (p_gamma.func Gamma x = Some (typt_box C)) *
-                    (subtypeP (typt_class (heap_typeof H o witn)) (typt_class C))
+       | (C, o) => {witn |
+                    p_env.func L x = Some (envBox o) /\
+                    p_gamma.func Gamma x = Some (typt_box C) /\
+                    subtypeP (typt_class (heap_typeof H o witn)) (typt_class C)
                    }
      end}.
 
@@ -120,13 +120,15 @@ Section WF_Env.
 
   Inductive WF_Frame : Heap_type -> ann_frame_type -> typecheck_type -> Type :=
   | t_frame1 : forall H Gamma eff t L ann sigma,
-                 TypeChecksP Gamma eff t sigma ->
+                isTerm t ->
+                TypeChecksP Gamma eff t sigma ->
                 WF_Env H Gamma L ->
                 WF_Frame H (ann_frame (sframe L t) ann) sigma.
 
   Inductive WF_Frame_ann : Heap_type -> ann_frame_type -> typecheck_type -> VarName_type ->
                            typecheck_type -> Type :=
   | t_frame2 : forall H Gamma eff t L ann sigma x tau,
+                 isTerm t ->
                  TypeChecksP (p_gamma.updatePartFunc Gamma x tau) eff t sigma ->
                  WF_Env H Gamma L ->
                  WF_Frame_ann H (ann_frame (sframe L t) ann) sigma x tau.

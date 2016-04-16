@@ -26,7 +26,7 @@ Section Preservation.
   Definition Reduction_SF' := Reduction_SF P.
   Definition Reduction_FS' := Reduction_FS P.
   Definition fieldsP := fields P.
-  Definition TypeChecksP := TypeChecks P.
+  Definition TypeChecksP := TypeChecksTerm P.
   Definition Heap_okP := Heap_ok P.
 
   Notation "[ H , x , tau ## FS ]" := (WF_FS P (Some (x, tau)) H FS) (at level 0).

@@ -27,7 +27,7 @@ Section Progress_SF.
 
   Definition Reduction_SF' := Reduction_SF P .
   Definition fieldsP := fields P.
-  Definition TypeChecksP := TypeChecks P.
+  Definition TypeChecksP := TypeChecksTerm P.
   Definition Heap_okP := Heap_ok P.
   Definition Heap_dom_okP := Heap_dom_ok P .
 
@@ -66,10 +66,8 @@ Section Progress_SF.
       
       exists ( # (H +*+ o --> (obj C FM)),
                ( L +++ x --> envRef o ) , t ! ).
-      apply (E_New _ _ _ _ _ _  _ _  flds).
-      inversion H8.
+      apply (E_New _ _ _ _ _ _  _ _  flds). 
       assumption; clear H2 H3.
-      assumption.
       assumption.
       reflexivity.
     Qed.
@@ -103,10 +101,10 @@ Section Progress_SF.
       exists ( # (H +*+ o --> (obj C FM)),
                ( L +++ x --> envBox o ) , t ! ).
       apply (E_Box _ _ _ _ _ _  _ _  flds).
-      inversion H8.
+      
       assumption; clear H2 H3.
       assumption.
-      assumption.
+      
       reflexivity.
     Qed.
 
@@ -128,7 +126,7 @@ Section Progress_SF.
       clear H2 H4 L0 H3 t0 H6 ann0 H7 sigma0 H5.
       
       assert ({null_ref_box | p_env.func L y = Some null_ref_box}).
-      clear H8 H1 H0 X ann.
+      clear  H1 H0 X ann.
       inversion X0.
       clear H0 gamma H1 eff0 x0 H3 t0 H5 tau H2 e H4.
       inversion X.
@@ -148,8 +146,6 @@ Section Progress_SF.
       
       exists ( # H , (L +++ x --> null_ref_box) , t ! ).
       apply E_Var.
-      inversion H8.
-      assumption.
       assumption.
     Qed.
 
@@ -169,12 +165,6 @@ Section Progress_SF.
 
       exists (# H, (L +++ x --> envNull), t !).
       apply E_Null.
-      
-      inversion X.
-      clear H2 H4 L0 H3 t0 H6 ann0 H7 sigma0 H5 X0 X1 eff Gamma H1 H0 X ann
-      sigma P H L .
-      inversion H8.
-      assumption.
     Qed.
 
     Theorem progress_SF_case_field :
@@ -193,16 +183,14 @@ Section Progress_SF.
       rename H0 into L_y_not_null.
       rename H2 into heap_dom_ok.
       inversion X.
-      inversion H7.
-      rename H9 into t_is_term.
-      clear H8 H7.
-      clear H0 H2  H4 L0 H3 t0 H6 ann0 sigma0 H5 H4.
+      clear H6 H5.
+      clear H0 H2  H4 L0 H3 t0 H4 ann0 sigma0 H3 H4.
       assert ({C | p_gamma.func Gamma y = Some (typt_class C)}).
       clear H1  X ann.
       inversion X0.
       clear  H0 gamma H1 eff0 x0 H3 t0 H5 tau H2 e H4 x X0 X2 sigma .
       inversion X.
-      clear H0 eff0 x f0 H1 H2  H4 gamma H3 sigma0 X witn t t_is_term f.
+      clear H0 eff0 x f0 H1 H2  H4 gamma H3 sigma0 X witn t f.
       exists C; assumption.
       destruct X2 as [C gamma_y_is_C].
 
@@ -230,25 +218,25 @@ Section Progress_SF.
       destruct s as [aa bb]; destruct aa as [cc oo]; destruct bb as [aaa bbb];
       destruct bbb as [aaaa bbbb].
       rewrite L_y_eq in aaaa.
-      inversion aaaa.
-      rewrite H2 in *.
+      destruct aaaa as [aaa1 aaa2].
+      inversion aaa1.
       assumption.
       
       destruct s as [aa bb]; destruct aa as [cc oo]; destruct bb as [aaa bbb];
-      destruct bbb as [aaaa bbbb]; destruct bbbb as [aaaaa bbbbb].
-      rewrite gamma_y_is_C in aaaaa.
+      destruct bbb as [aaaa bbbb]. destruct aaaa as [aaaaa bbbbb].
+      rewrite gamma_y_is_C in bbbbb.
       discriminate.
 
       destruct L_gamma_compat.
       destruct s.
       firstorder.
       destruct s as [aa bb]; destruct aa as [cc oo]; destruct bb as [aaa bbb];
-      destruct bbb as [aaaa bbbb].
-      rewrite L_y_eq in aaaa; discriminate.
+      destruct bbb as [aaaa bbbb]; destruct aaaa as [a5 b5].
+      rewrite L_y_eq in a5; discriminate.
 
       destruct s as [aa bb]; destruct aa as [cc oo]; destruct bb as [aaa bbb];
-      destruct bbb as [aaaa bbbb]; destruct bbbb as [aaaaa bbbbb].
-      rewrite gamma_y_is_C in aaaaa.
+      destruct bbb as [aaaa bbbb]; destruct aaaa as [aaaaa bbbbb].
+      rewrite gamma_y_is_C in bbbbb.
       discriminate.
 
       intro.
@@ -279,31 +267,34 @@ Section Progress_SF.
       destruct s.
       firstorder.
       destruct s as [aa bb]; destruct aa as [cc oo]; destruct bb as [aaa bbb];
-      destruct bbb as [aaaa bbbb]; destruct bbbb as [aaaaa bbbbb].
-      rewrite gamma_y_is_C in aaaaa.
+      destruct bbb as [aaaa bbbb]; destruct aaaa as [aaaaa bbbbb].
+      rewrite gamma_y_is_C in bbbbb.
       inversion aaaaa.
       rewrite <- H2 in *.
-      clear H2 aaaaa cc.
-      rewrite L_y_i_o in aaaa; inversion aaaa.
-      rewrite  H2 in *.
-      clear aaaa.
+      inversion bbbbb.
+      rewrite <- H3 in *.
+      clear aaaaa cc bbbbb H3.
+      rewrite L_y_i_o in H2; inversion H2.
+      rewrite  H3 in *.
+      rename H3 into ooo_equal.
+      clear  H2.
       exists (heap_typeof H oo aaa).
       split.
 
       set (C := heap_typeof H o o_in_H).
       destruct (heap_typeof_impl P H o C o_in_H (eq_refl _))
         as [FM H_o_value].
-      rewrite H2 in H_o_value.
+      rewrite ooo_equal in H_o_value.
       symmetry.
       apply (heap_typeof_same P _ _ _ FM H_o_value).
-      unfold wf_env.subtypeP in bbbbb.
-      inversion bbbbb.
-      clear D H0 H3      .
+      unfold wf_env.subtypeP in bbbb.
+      inversion bbbb.
+      clear D H0 H2      .
       assumption.
       
       destruct s as [aa bb]; destruct aa as [cc oo]; destruct bb as [aaa bbb];
-      destruct bbb as [aaaa bbbb]; destruct bbbb as [aaaaa bbbbb].
-      rewrite gamma_y_is_C in aaaaa.
+      destruct bbb as [aaaa bbbb]; destruct aaaa as [aaaaa bbbbb].
+      rewrite gamma_y_is_C in bbbbb.
       discriminate.
 
       unfold Heap_dom_okP in heap_dom_ok.
@@ -338,7 +329,7 @@ Section Progress_SF.
         ( L +++ x --> (fm2env fmVal) ) , t ! ).
 
       apply (E_Field _ _ _ o _ _ _ _
-                     C FM _ t_is_term L_y_i_o H_o_value
+                     C FM _ L_y_i_o H_o_value
                      FM_f
             ).
     Qed.
