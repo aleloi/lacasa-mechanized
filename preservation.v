@@ -41,7 +41,7 @@ Section Preservation.
     intros.
     case_eq t; intros;  rewrite H0 in *  ;    clear H0 t; inversion X;
     inversion X0;
-    exists (p_gamma.updatePartFunc gamma v sigma0); auto;
+    exists (p_Γ.updatePartFunc gamma v sigma0); auto;
     rewrite H9 in *; auto.
   Qed.
 
@@ -67,7 +67,7 @@ Section Preservation.
     clear Gamma_type_let.
     clear gamma H0 x0 H3 eff0 H1 t0 H5 H2 tau H4 e.
     rename X into Gamma_type_var_y; rename X0 into Gamma'_type_t.
-    set (Gamma' := (p_gamma.updatePartFunc Gamma x sigma0)).
+    set (Gamma' := (p_Γ.updatePartFunc Gamma x sigma0)).
     fold Gamma' in Gamma'_type_t.
     
     (* split. *)
@@ -110,7 +110,7 @@ Section Preservation.
 
     induction b;  destruct x2. (* case L(y) = o', H(o') = <C, FM> in WF-var*)
     induction p.
-    destruct p as [[Ly_value Gamma_y_value' ] heap_gamma_y_subtype ].
+    destruct p as [[Ly_value Gamma_y_value' ] heap_Γ_y_subtype ].
     rewrite (_3_b_i_A) in *; inversion Ly_value.
     destruct H1.
     rename c into C'.
@@ -122,7 +122,7 @@ Section Preservation.
     split. split.
     apply p_env.updatedFuncProp; apply eq_refl.
 
-    set (lem := proj1  (p_gamma.updatedFuncProp Gamma  x sigma0 x) (eq_refl x)).
+    set (lem := proj1  (p_Γ.updatedFuncProp Gamma  x sigma0 x) (eq_refl x)).
     fold Gamma' in lem.
     rewrite lem in Gamma'_x; inversion Gamma'_x; rename H1 into sigma01_eq;
     rewrite sigma01_eq in *.
@@ -187,7 +187,7 @@ Section Preservation.
     rename H1 into sigma'_typt_box_c.
     symmetry in sigma'_typt_box_c.
     destruct sigma'_typt_box_c.
-    set (lem := (proj1 (p_gamma.updatedFuncProp Gamma x (typt_box c) x) (eq_refl _))).
+    set (lem := (proj1 (p_Γ.updatedFuncProp Gamma x (typt_box c) x) (eq_refl _))).
     fold Gamma' in lem.
     simpl in lem.
     rewrite lem in Gamma'_x.
@@ -204,19 +204,19 @@ Section Preservation.
     rename x0 into z.
     rename sigma1 into tau.
     rename sigma0 into sigma'.
-    assert (p_gamma.func Gamma z = Some tau) as _4_a.
+    assert (p_Γ.func Gamma z = Some tau) as _4_a.
     rewrite <- Gamma'z.
     symmetry.
-    apply p_gamma.updatedFuncProp. firstorder.
+    apply p_Γ.updatedFuncProp. firstorder.
 
     destruct wf_env_frame as [ _4_c_i _4_c_ii].
     set (_4_d := _4_c_ii z tau _4_a).
     unfold WF_Var.
     rewrite Gamma'z.
     Require Import Coq.Lists.List.
-    assert (In z (p_gamma.domain Gamma)) as _4_ca.
-    set (lem := p_gamma.fDomainCompat Gamma z).
-    set (in_or_not := in_dec v_eq_dec z (p_gamma.domain Gamma)).
+    assert (In z (p_Γ.domain Gamma)) as _4_ca.
+    set (lem := p_Γ.fDomainCompat Gamma z).
+    set (in_or_not := in_dec v_eq_dec z (p_Γ.domain Gamma)).
     firstorder; rename H0 into Gamma_z_None;
     rewrite Gamma_z_None in _4_a; discriminate.
 
@@ -262,7 +262,7 @@ Section Preservation.
 
     destruct _3_b as [_6_a _6_b].
     
-    apply (t_frame1' H (p_gamma.updatePartFunc Gamma x sigma' )
+    apply (t_frame1' H (p_Γ.updatePartFunc Gamma x sigma' )
                     eff t
                     (p_env.updatePartFunc L x envNull) ann sigma).
     exact _4_b.
@@ -275,9 +275,9 @@ Section Preservation.
     intros z tau _8.
     elim (v_eq_dec x z).
     intro x_is_z; rewrite <- x_is_z in *; clear x_is_z.
-    (* assert (p_gamma.func (p_gamma.updatePartFunc Gamma x sigma') x = Some sigma') as _10_a. *)
+    (* assert (p_Γ.func (p_Γ.updatePartFunc Gamma x sigma') x = Some sigma') as _10_a. *)
 
-    (* exact (proj1 (p_gamma.updatedFuncProp Gamma  x sigma' x) (eq_refl x)). *)
+    (* exact (proj1 (p_Γ.updatedFuncProp Gamma  x sigma' x) (eq_refl x)). *)
     (* rewrite -> _10_a in _8; inversion _8. rewrite <- H1 in *; clear H1 tau _8. *)
     (* unfold WF_Var. *)
     apply inl.
@@ -285,10 +285,10 @@ Section Preservation.
     exact (proj1 (p_env.updatedFuncProp L  x  envNull x) (eq_refl x)).
 
     intro x_neq_z. 
-    assert (p_gamma.func Gamma z = Some tau) as new_4_a.
+    assert (p_Γ.func Gamma z = Some tau) as new_4_a.
     rewrite <- _8.
     symmetry.
-    apply (proj2 (p_gamma.updatedFuncProp Gamma x sigma' z)).
+    apply (proj2 (p_Γ.updatedFuncProp Gamma x sigma' z)).
     firstorder.
     
     (* set (new__4_d := _6_b z tau _4_a). *)
@@ -299,9 +299,9 @@ Section Preservation.
     
     
     (* Require Import Coq.Lists.List. *)
-    assert (In z (p_gamma.domain Gamma)) as new_4_ca.
-    set (lem := p_gamma.fDomainCompat Gamma z).
-    set (in_or_not := in_dec v_eq_dec z (p_gamma.domain Gamma)).
+    assert (In z (p_Γ.domain Gamma)) as new_4_ca.
+    set (lem := p_Γ.fDomainCompat Gamma z).
+    set (in_or_not := in_dec v_eq_dec z (p_Γ.domain Gamma)).
     firstorder. rewrite H0 in new_4_a; discriminate.
 
     set (lem''' := _6_a z new_4_ca).
@@ -615,7 +615,7 @@ Theorem preservation_case_assign H L x y f z t C FM o sigma envVal ann:
   heap_dom_ok : Heap_dom_okP H
   t : ExprOrTerm
   x : VarName_type
-  y, z, f : p_gamma.A
+  y, z, f : p_Γ.A
   X : WF_Frame' H
         (ann_frame (sframe L t_let x <- FieldAssignment y f z t_in (t)) ann)
         sigma

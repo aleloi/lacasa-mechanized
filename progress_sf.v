@@ -134,7 +134,7 @@ Section Progress_SF.
       apply fst in X1.
       unfold gamma_env_subset in X1.
       apply (fun f => f y) in X1.
-      apply (fun f => f (p_gamma.in_part_func_domain _ _ _ H3)) in X1.
+      apply (fun f => f (p_Γ.in_part_func_domain _ _ _ H3)) in X1.
       case_eq (p_env.func L y).
       intros L_y L_y_eq.
       exists L_y; reflexivity.
@@ -185,7 +185,7 @@ Section Progress_SF.
       inversion X.
       clear H6 H5.
       clear H0 H2  H4 L0 H3 t0 H4 ann0 sigma0 H3 H4.
-      assert ({C | p_gamma.func Gamma y = Some (typt_class C)}).
+      assert ({C | p_Γ.func Gamma y = Some (typt_class C)}).
       clear H1  X ann.
       inversion X0.
       clear  H0 gamma H1 eff0 x0 H3 t0 H5 tau H2 e H4 x X0 X2 sigma .
@@ -203,7 +203,7 @@ Section Progress_SF.
       destruct X1 as [subset L_gamma_compat].
       unfold gamma_env_subset in subset.
       apply (fun f => f y) in subset.
-      apply (fun f => f (p_gamma.in_part_func_domain _ _ _ gamma_y_is_C)) in subset.
+      apply (fun f => f (p_Γ.in_part_func_domain _ _ _ gamma_y_is_C)) in subset.
       apply (fun f => f y (typt_class C) gamma_y_is_C) in L_gamma_compat.
       
       case_eq (p_env.func L y).

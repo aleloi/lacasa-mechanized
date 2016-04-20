@@ -138,8 +138,8 @@ Section Progress.
 
     set (w' := fst wf_h_gamma_l).
     apply (fun f => f y ) in w'.
-    assert (In y (p_gamma.domain Gamma)).
-    apply (p_gamma.in_part_func_domain _ _ sigma); assumption.
+    assert (In y (p_Γ.domain Gamma)).
+    apply (p_Γ.in_part_func_domain _ _ sigma); assumption.
     apply (fun f => f H0) in w'.
     apply p_env.in_part_func_domain_conv; assumption.
 
@@ -202,7 +202,7 @@ Section Progress.
     clear H9 H10 H6 H8 H7 witn f0 x1 eff1 gamma0 H2 H5 H5 H4 H3 H1 H0 X0 X t tau.
     clear x0 sigma0 e eff0 gamma.
     apply fst in wf_h_gamma_l.
-    exact (wf_h_gamma_l y (p_gamma.in_part_func_domain _ _ _ H11)).
+    exact (wf_h_gamma_l y (p_Γ.in_part_func_domain _ _ _ H11)).
     destruct (p_env.in_part_func_domain_conv _ _ H0).
     clear H0.
 
@@ -260,7 +260,7 @@ Section Progress.
     clear x0 sigma0 e eff0 gamma witn0 H5 H4 H0 H2 H1 witn f0 x1 eff1 gamma0.
     clear  X1 H12 D C X2 y0.
     apply fst in wf_h_gamma_l.
-    exact (wf_h_gamma_l y (p_gamma.in_part_func_domain _ _ _ H3)).
+    exact (wf_h_gamma_l y (p_Γ.in_part_func_domain _ _ _ H3)).
     destruct (p_env.in_part_func_domain_conv _ _ H0).
     clear H0.
 
@@ -322,7 +322,7 @@ Section Progress.
 
     set (w' := fst wf_h_gamma_l).
     assert (In z (p_env.domain L)) as z_in_L.
-    exact (w' z (p_gamma.in_part_func_domain _ _ _ _gamma_z_typechecks)).
+    exact (w' z (p_Γ.in_part_func_domain _ _ _ _gamma_z_typechecks)).
     clear w'.
 
     assert (
@@ -338,7 +338,7 @@ Section Progress.
     .
         
     set (w' := fst wf_h_gamma_l). 
-    set ( lem := w' y (p_gamma.in_part_func_domain _ _ _ H6)).
+    set ( lem := w' y (p_Γ.in_part_func_domain _ _ _ H6)).
     destruct (p_env.in_part_func_domain_conv _ _ lem).
     clear lem w'.
 
@@ -466,7 +466,7 @@ Section Progress.
     clear H4 sigma1 H0 x H2 eff0 H1 gamma X0 sigma0 sigma eff ann.
     
     set (w' := fst wf_h_gamma_l). 
-    set ( lem := w' y (p_gamma.in_part_func_domain _ _ _ H3)).
+    set ( lem := w' y (p_Γ.in_part_func_domain _ _ _ H3)).
     destruct (p_env.in_part_func_domain_conv _ _ lem).
     clear lem w'.
 

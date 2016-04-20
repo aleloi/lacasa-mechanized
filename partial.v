@@ -155,7 +155,7 @@ Module Type Nice (T: Typ) :=
        
 
 
-Module Update (T BT: Typ) (Import nc: Nice T). 
+Module PartialFunctions (T BT: Typ) (Import nc: Nice T). 
   Definition B := BT.t.
 
   Notation A := T.t.
@@ -432,7 +432,7 @@ Module Update (T BT: Typ) (Import nc: Nice T).
     set (lem := fDomainCompat p a).
     firstorder.
   Qed.
-End Update.
+End PartialFunctions.
 
 (* Print Update. *)
 

@@ -15,7 +15,7 @@ Section WF_Env.
 
   Definition gamma_env_subset (gamma: Gamma_type) (L: Env_type) :=
     forall x,
-      In x (p_gamma.domain gamma) ->
+      In x (p_Γ.domain gamma) ->
       In x (p_env.domain L).
 
   Theorem in_dec_equivalence (A: Type) (eq_dec: forall (x y: A),
@@ -32,11 +32,11 @@ Section WF_Env.
 
   Theorem subset_preserved gamma L x sigma envVal :
     gamma_env_subset gamma L ->
-    gamma_env_subset (p_gamma.updatePartFunc gamma x sigma )
+    gamma_env_subset (p_Γ.updatePartFunc gamma x sigma )
                      (p_env.updatePartFunc L x envVal).
     intros subset x'.
     intro.
-    set (lem_gamma := p_gamma.updatedFuncProp gamma x sigma x').
+    set (lem_gamma := p_Γ.updatedFuncProp gamma x sigma x').
     set (lem_env := p_env.updatedFuncProp L x envVal x').
     
     elim (v_eq_dec x' x).
@@ -56,13 +56,13 @@ Section WF_Env.
      *         x' in dom(L) <--> x' in dom(L[x |-> envVal])
      *)
     intro x_neq.
-    assert (In x' (p_gamma.domain gamma) <-> In x' (p_gamma.domain
-                                                      (p_gamma.updatePartFunc gamma x sigma))).
-    apply (proj2 (in_dec_equivalence p_gamma.A v_eq_dec x' _ _)).
+    assert (In x' (p_Γ.domain gamma) <-> In x' (p_Γ.domain
+                                                      (p_Γ.updatePartFunc gamma x sigma))).
+    apply (proj2 (in_dec_equivalence p_Γ.A v_eq_dec x' _ _)).
     set (lem_gamma' := (proj2 lem_gamma) x_neq).
     set (lem_gamma_upd_equiv
-         := proj2 (p_gamma.fDomainCompat (p_gamma.updatePartFunc gamma x sigma) x')).
-    set (lem_gamma_equiv := proj2 (p_gamma.fDomainCompat gamma x')).
+         := proj2 (p_Γ.fDomainCompat (p_Γ.updatePartFunc gamma x sigma) x')).
+    set (lem_gamma_equiv := proj2 (p_Γ.fDomainCompat gamma x')).
     firstorder.
 
     assert (In x' (p_env.domain L) <-> In x' (p_env.domain
@@ -97,7 +97,7 @@ Section WF_Env.
      match C_o with
        | (C, o) => {witn : _&
                     (p_env.func L x = Some (envRef o)) *
-                    (p_gamma.func Gamma x = Some (typt_class C)) *
+                    (p_Γ.func Gamma x = Some (typt_class C)) *
                     (subtypeP (typt_class (heap_typeof H o witn)) (typt_class C))
                    }
      end} +
@@ -105,7 +105,7 @@ Section WF_Env.
      match C_o with
        | (C, o) => {witn : _ &
                     (p_env.func L x = Some (envBox o)) *
-                    (p_gamma.func Gamma x = Some (typt_box C)) *
+                    (p_Γ.func Gamma x = Some (typt_box C)) *
                     (subtypeP (typt_class (heap_typeof H o witn)) (typt_class C))
                    }
      end}.
@@ -113,7 +113,7 @@ Section WF_Env.
   Definition WF_Env H Gamma L :=
     gamma_env_subset Gamma L *
     forall x sigma,
-      p_gamma.func Gamma x = Some sigma ->
+      p_Γ.func Gamma x = Some sigma ->
       WF_Var H Gamma L x.
 
   
@@ -127,7 +127,7 @@ Section WF_Env.
   Inductive WF_Frame_ann : Heap_type -> ann_frame_type -> typecheck_type -> VarName_type ->
                            typecheck_type -> Type :=
   | t_frame2 : forall H Gamma eff t L ann sigma x tau,
-                 TypeChecksP (p_gamma.updatePartFunc Gamma x tau) eff t sigma ->
+                 TypeChecksP (p_Γ.updatePartFunc Gamma x tau) eff t sigma ->
                  WF_Env H Gamma L ->
                  WF_Frame_ann H (ann_frame (sframe L t) ann) sigma x tau.
 

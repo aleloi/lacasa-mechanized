@@ -53,7 +53,7 @@ Module NamesAndTypesAndOtherNames (ant: AbstractNamesAndTypes) .
     Definition t := FM_Range_type.
   End FM_typeM.
 
-  Module p_FM := Update ant.FieldNameM FM_typeM ant.fn.
+  Module p_FM := PartialFunctions ant.FieldNameM FM_typeM ant.fn.
 
   Definition FM_type := p_FM.PartFunc.
 
@@ -65,7 +65,7 @@ Module NamesAndTypesAndOtherNames (ant: AbstractNamesAndTypes) .
     Definition t := RTObject.
   End RTObject_typeM.
 
-  Module p_heap := Update ant.RefM RTObject_typeM ant.rn.
+  Module p_heap := PartialFunctions ant.RefM RTObject_typeM ant.rn.
 
   Definition Heap_type := p_heap.PartFunc.
 
@@ -78,7 +78,7 @@ Module NamesAndTypesAndOtherNames (ant: AbstractNamesAndTypes) .
     Definition t := env_Range_type.
   End env_Range_typeM.
 
-  Module p_env := Update VarNameM env_Range_typeM
+  Module p_env := PartialFunctions VarNameM env_Range_typeM
                          ant.vn.
 
   Definition Env_type := p_env.PartFunc.
@@ -123,9 +123,9 @@ Module NamesAndTypesAndOtherNames (ant: AbstractNamesAndTypes) .
     Definition t := typecheck_type.
   End tyM.
 
-  Module p_gamma := Update VarNameM tyM vn.
+  Module p_Γ := PartialFunctions VarNameM tyM vn.
 
-  Notation Gamma_type := p_gamma.PartFunc.
+  Notation Gamma_type := p_Γ.PartFunc.
 
 End NamesAndTypesAndOtherNames.
   

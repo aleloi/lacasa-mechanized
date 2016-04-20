@@ -23,18 +23,18 @@ Section Typing.
                TypeChecksExpr gamma eff Null typt_all
                           
   | T_Var : forall gamma eff x sigma,
-              p_gamma.func gamma x = Some sigma ->
+              p_Γ.func gamma x = Some sigma ->
               TypeChecksExpr gamma eff (Var x) sigma
 
   | T_Field : forall gamma eff x f C,
               forall witn: fldP C f,
-                p_gamma.func gamma x = Some (typt_class C) ->
+                p_Γ.func gamma x = Some (typt_class C) ->
                 TypeChecksExpr gamma eff (FieldSelection x f)
                            (typt_class (ftypeP C f witn))
 
   | T_Assign : forall gamma eff x f y C D,
                forall witn: fldP C f,
-                 p_gamma.func gamma y = Some (typt_class C) ->
+                 p_Γ.func gamma y = Some (typt_class C) ->
                  TypeChecksExpr gamma eff (FieldSelection x f) (typt_class D) ->
                  subtypeP (typt_class C) (typt_class D) ->
                  TypeChecksExpr gamma eff (FieldAssignment x f y) (typt_class C)
@@ -58,16 +58,16 @@ Section Typing.
   | T_Invoke :
       forall gamma C y m z md eff sigma , (* TODO recursion and well-formedness*)
       forall (witn: method P C m md),
-        p_gamma.func gamma y = Some (typt_class C) ->
-        p_gamma.func gamma z = Some sigma ->
+        p_Γ.func gamma y = Some (typt_class C) ->
+        p_Γ.func gamma z = Some sigma ->
         subtypeP sigma (argType md) ->
         TypeChecksExpr gamma eff (MethodInvocation y m z) (retType md)
   
 
   | T_Open : forall gamma eff x C y t sigma,
                TypeChecksExpr gamma eff (Var x) (typt_box C) ->
-               TypeChecksTerm (p_gamma.updatePartFunc 
-                             p_gamma.emptyPartFunc
+               TypeChecksTerm (p_Γ.updatePartFunc 
+                             p_Γ.emptyPartFunc
                              y (typt_class C)
                           ) eff_ocap t sigma ->
                TypeChecksExpr gamma eff (Open x y t) (typt_box C)
@@ -78,12 +78,12 @@ Section Typing.
 
   | T_Let : forall gamma eff e sigma x tau t,
               TypeChecksExpr gamma eff e sigma ->
-              TypeChecksTerm (p_gamma.updatePartFunc gamma x sigma) eff
+              TypeChecksTerm (p_Γ.updatePartFunc gamma x sigma) eff
                          t tau ->
               TypeChecksTerm gamma eff (TLet x e t) tau
 
   | T_Var_T : forall gamma eff x sigma,
-              p_gamma.func gamma x = Some sigma ->
+              p_Γ.func gamma x = Some sigma ->
               TypeChecksTerm gamma eff (TVar x) sigma.
 
 End Typing.
