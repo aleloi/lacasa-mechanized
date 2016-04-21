@@ -33,7 +33,7 @@ Section Typing.
                            (typt_class (ftypeP C f witn))
 
   | T_Assign : forall gamma eff x f y C D,
-               forall witn: fldP C f,
+               (* forall witn: fldP C f, *)
                  p_Γ.func gamma y = Some (typt_class C) ->
                  TypeChecksExpr gamma eff (FieldSelection x f) (typt_class D) ->
                  subtypeP (typt_class C) (typt_class D) ->

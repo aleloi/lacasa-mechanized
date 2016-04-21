@@ -62,7 +62,7 @@ Section Heap.
 
   Theorem heap_typeof_impl H o C :
     forall witn,
-      heap_typeof H o witn = C->
+      heap_typeof H o witn = C ->
       {FM | p_heap.func H o = Some (obj C FM)}.
     intros.
     case_eq (p_heap.func H o).

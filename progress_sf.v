@@ -31,12 +31,19 @@ Section Progress_SF.
   Definition Heap_okP := Heap_ok P.
   Definition Heap_dom_okP := Heap_dom_ok P .
 
-  Notation "( p +++ a --> b )" := (p_env.updatePartFunc
+  Notation "( p +++ a ↦ b )" := (p_env.updatePartFunc
                                      p a b) (at level 0).
 
-  Notation "( H +*+ o --> obj )" := (p_heap.updatePartFunc
-                                              H o obj)
-                                      (at level 0).
+  Notation "( H +*+ o ↦ obj )" := (p_heap.updatePartFunc
+                                     H o obj)
+                                    (at level 0).
+  Notation "( Γ ⊍ x ↦ σ )" := (p_Γ.updatePartFunc
+                                     Γ x σ)
+                                (at level 0).
+  Notation " a ⪳ b " := (subtype P a b) (at level 0).
+  Notation " a ⪯ b " := (subclass P a b) (at level 0).
+
+  Notation "[ L , t ] ^ a" := (ann_frame (sframe L t) a) (at level 0).
 
   Theorem progress_SF_case_new :
     forall H L C t x sigma ann,
@@ -64,8 +71,8 @@ Section Progress_SF.
                   (p_heap.domain H))
         as [o o_fresh_prop].
       
-      exists ( # (H +*+ o --> (obj C FM)),
-               ( L +++ x --> envRef o ) , t ! ).
+      exists ( # (H +*+ o ↦ (obj C FM)),
+               ( L +++ x ↦ envRef o ) , t ! ).
       apply (E_New _ _ _ _ _ _  _ _  flds). 
       assumption; clear H2 H3.
       assumption.
@@ -98,8 +105,8 @@ Section Progress_SF.
                   (p_heap.domain H))
         as [o o_fresh_prop].
       
-      exists ( # (H +*+ o --> (obj C FM)),
-               ( L +++ x --> envBox o ) , t ! ).
+      exists ( # (H +*+ o ↦ (obj C FM)),
+               ( L +++ x ↦ envBox o ) , t ! ).
       apply (E_Box _ _ _ _ _ _  _ _  flds).
       
       assumption; clear H2 H3.
@@ -144,7 +151,7 @@ Section Progress_SF.
       
       destruct X2 as [null_ref_box L_y_is_null_ref_box].
       
-      exists ( # H , (L +++ x --> null_ref_box) , t ! ).
+      exists ( # H , (L +++ x ↦ null_ref_box) , t ! ).
       apply E_Var.
       assumption.
     Qed.
@@ -163,7 +170,7 @@ Section Progress_SF.
     Proof.
       intros.
 
-      exists (# H, (L +++ x --> envNull), t !).
+      exists (# H, (L +++ x ↦ envNull), t !).
       apply E_Null.
     Qed.
 
@@ -326,7 +333,7 @@ Section Progress_SF.
       destruct X as [fmVal FM_f].
       exists      
       ( # H,
-        ( L +++ x --> (fm2env fmVal) ) , t ! ).
+        ( L +++ x ↦ (fm2env fmVal) ) , t ! ).
 
       apply (E_Field _ _ _ o _ _ _ _
                      C FM _ L_y_i_o H_o_value
@@ -335,18 +342,232 @@ Section Progress_SF.
     Qed.
 
 
+    Notation "y ∘ f ⟵ z" := (FieldAssignment y f z) (at level 0).
+
+    Notation "a ⟿ b" :=  (Reduction_SF' a b) (at level 0).
+    Notation " ⊢ H" := (Heap_okP H) (at level 0).
+    Notation " ⊩ H" := (Heap_dom_okP H) (at level 0).
+    Notation "( Γ , ef ⊩' t ▷ σ )" := (TypeChecksTerm P Γ ef t σ) (at level 0).
+    Notation "( Γ , ef ⊩'' e ▷ σ )" := (TypeChecksExpr P Γ ef e σ) (at level 0).
+    
     Theorem progress_SF_case_assign :
     forall H L t x y f z sigma ann,
       WF_Frame' H (ann_frame
                      (sframe L (t_let x <- (FieldAssignment y f z) t_in t))
                      ann) sigma ->
       p_env.func L y <> Some envNull ->
-      Heap_okP H ->
-      Heap_dom_okP H ->
+      ⊢ H ->
+      ⊩ H ->
       { frame : sfconfig_type
-                  & Reduction_SF'
-                  (# H, L, (t_let x <- (FieldAssignment y f z) t_in t) !)
-                  frame}.
-    Admitted.
+                  & 
+                  (# H, L, (t_let x <- (y ∘ f ⟵ z) t_in t) !) ⟿ frame}.
+      
+      intros H L t x y f z sigma ann wf_frame L_y_not_null heap_ok_H heap_dom_ok_H.
+      set (F := [L, t_let x <- y ∘ f ⟵ z t_in t]^ ann).
+      fold F in wf_frame.
+      clear heap_ok_H.
+      inversion_clear wf_frame as [ dummy_ Γ ef ].
+      rename X into typ_sigma.
+      rename X0 into wf_H_Γ_L.
+      rename sigma into σ.
+      clear F ann.
+      unfold wf_env.TypeChecksP in typ_sigma.
+      inversion_clear typ_sigma as [a_dummy b_dummy c_dummy τ  | ].
+      rename X into typ_τ.
+      clear X0.
+      (* rename X0 into Γ'_typ_σ. *)
+      (* set (Γ' := (Γ ⊍ x ↦ τ)). *)
+      (* fold Γ' in Γ'_typ_σ. *)
+      inversion_clear typ_τ.
+      rename H0 into Γ_z_is_C.
+      rename X into y_f_is_D.
+      clear X0 τ.
+      (* rename X0 into C_sub_D. *)
+      (* unfold typing.subtypeP in C_sub_D. *)
+      (* inversion_clear C_sub_D. *)
+      (* rename H0 into C_sub_D. *)
+      inversion y_f_is_D.
+      clear gamma x0 H1 H2 eff H0 H4 f0 witn0.
+      rename C0 into C'.
+      rename H3 into ΓyC'.
+      rename H5 into C'_field.
+      set (D' := (typing.ftypeP P C' f witn)).
+      destruct C'_field.
+      rename D' into D.
+      fold D in (* C_sub_D,  *) y_f_is_D.
+
+      set (wf_H_Γ_L' := wf_H_Γ_L).
+
+      assert ({o | p_env.func L y = Some (envRef o)
+                   /\
+                   In o (p_heap.domain H)
+              }) as L_y_o.
+      { (* L y = o, o in H *) 
+        clear (* C_sub_D *) Γ_z_is_C C heap_dom_ok_H 
+              z t
+        .
+        apply fst in wf_H_Γ_L'.
+        apply (fun f => f y) in wf_H_Γ_L'.
+        assert (In y (p_Γ.domain Γ)) as y_in_Γ.
+        apply (p_Γ.in_part_func_domain _ _ _ ΓyC').
+        apply (fun f => f y_in_Γ) in wf_H_Γ_L'.
+        clear y_in_Γ.
+
+        destruct (p_env.in_part_func_domain_conv _ _  wf_H_Γ_L') as
+            [envVal envValEq].
+        
+        
+
+        apply snd in wf_H_Γ_L.
+        apply (fun f => f y (typt_class C') ΓyC' ) in wf_H_Γ_L.
+        
+        destruct wf_H_Γ_L as [L_y_not_box | L_y_box ].
+        { (* L y not box *)
+          destruct L_y_not_box as [L_y_is_null |
+                                   [ [_ o'] [o'_in_H [[L_y_is_o' _] _]  ] ]  ].
+
+          { (* L y = null *) 
+            rewrite L_y_is_null in L_y_not_null;  exfalso; apply L_y_not_null;
+            reflexivity.
+          }
+          { (* L y = o *)
+            exists o'; exact ( conj L_y_is_o' o'_in_H).
+          }
+        }
+        { (* L y = b(o) *)
+          destruct L_y_box as [ [C'' _] [_ [[_ ΓyBox] _]]].
+          rewrite ΓyC' in ΓyBox; inversion ΓyBox.
+        }
+        
+      }
+
+      destruct L_y_o as [o [L_y_o o_in_H]].
+
+      destruct (p_heap.in_part_func_domain_conv H o o_in_H) as
+          [[C'' FM''] H_o_C_FM].
+
+      assert ({o | p_env.func L z = Some (envRef o)
+                   /\
+                   In o (p_heap.domain H)
+              } + (p_env.func L z = Some envNull)) as L_z.
+      { (* L z = o, o in H *) 
+        clear (* C_sub_D *)  heap_dom_ok_H  
+              t
+        .
+        apply fst in wf_H_Γ_L'.
+        apply (fun f => f z) in wf_H_Γ_L'.
+        assert (In z (p_Γ.domain Γ)) as z_in_Γ.
+        { (* z in Gamma *)
+          apply (p_Γ.in_part_func_domain _ _ _ Γ_z_is_C).
+        }
+        apply (fun f => f z_in_Γ) in wf_H_Γ_L'.
+        clear z_in_Γ.
+        
+        destruct (p_env.in_part_func_domain_conv _ _  wf_H_Γ_L') as
+            [envVal envValEq].
+        
+        apply snd in wf_H_Γ_L.
+        apply (fun f => f z (typt_class C) Γ_z_is_C ) in wf_H_Γ_L.
+        
+        destruct wf_H_Γ_L as [L_z_not_box | L_z_box ].
+        { (* L z not box *)
+          destruct L_z_not_box as [L_z_is_null |
+                                   [ [_ o'] [o'_in_H [[L_z_is_o' _] _]  ] ]  ].
+
+          { (* L z = null *)
+            apply inr; exact L_z_is_null.
+          }
+          { (* L y = o *)
+            apply inl; exists o'; exact ( conj L_z_is_o' o'_in_H).
+          }
+        }
+        { (* L y = b(o) *)
+          destruct L_z_box as [ [C''' _] [_ [[_ ΓzBox] _]]].
+          rewrite Γ_z_is_C in ΓzBox; inversion ΓzBox.
+        }
+      }
+
+      clear  L_y_not_null   Γ_z_is_C y_f_is_D.
+      
+      assert (C'' ⪯ C' ) as heap_typ_sub_typ_type.
+
+      { (* C'' ⪯ C' *)
+        apply snd in wf_H_Γ_L'.
+        apply (fun f => f y (typt_class C') ΓyC' ) in wf_H_Γ_L'.
+        
+        destruct wf_H_Γ_L' as [L_y_not_box | L_y_box ].
+        { (* L y not box *)
+          destruct L_y_not_box as [L_y_is_null |
+                                   [ [C''' o']
+                                       [o'_in_H [[L_y_is_o' ΓyC'''] subC']  ] ]  ].
+
+          { (* L y = null *)
+            rewrite L_y_is_null in L_y_o; discriminate.
+          }
+          { (* L y = o *)
+            rewrite L_y_o in L_y_is_o'; inversion L_y_is_o' as [o_eq];
+            destruct o_eq; clear L_y_is_o'.
+            rewrite ΓyC' in ΓyC'''; inversion ΓyC''' as [C_equal];
+            destruct C_equal.
+            inversion_clear subC'. rename H0 into typeof_sub_C'.
+            destruct (heap_typeof_impl P _ o
+                                       (heap_typeof H o o'_in_H)
+                                       o'_in_H
+                                       (eq_refl _ )
+                     ) as [FM' H_o'_typeof].
+            rewrite  H_o_C_FM in H_o'_typeof;
+              inversion H_o'_typeof  as [[C''_typeof dummy] ].
+            exact typeof_sub_C'.
+          }
+        }
+        { (* L y = b(o) *)
+          destruct L_y_box as [ [C''' _] [_ [[_ ΓyBox] _]]].
+          rewrite ΓyC' in ΓyBox; inversion ΓyBox.
+        }
+      }
+      
+      assert (In f (p_FM.domain FM'')) as f_in_FM.
+      {
+        clear x t z σ  C D wf_H_Γ_L' o_in_H L_z.
+        set (f_fld_C'' := field_subclass P C'' C' f witn heap_typ_sub_typ_type).
+        apply (fun f => f o C'' FM'') in heap_dom_ok_H .
+        apply (fun f => f H_o_C_FM) in heap_dom_ok_H.
+        exact (fld_in_flds P C'' f (p_FM.domain FM'')
+                                f_fld_C'' heap_dom_ok_H
+            ).
+      }
+
+      assert ({envVal | p_env.func L z = Some envVal
+                        /\ is_not_box envVal
+              }) as L_env_val.
+      { (* L z = envVal, envVal not box *)
+        destruct L_z as [ [o' [L_z_o' _]]  | L_z_null ].
+        {
+          exists (envRef o').
+          split.
+          { exact L_z_o'.  }
+          { simpl. auto. }
+        }
+        {
+          exists envNull; split.
+          {  exact L_z_null.      }
+          { simpl. auto. }
+        }
+      }
+      
+      destruct L_env_val as [env_val [L_z_envVal not_box_envVal]].
+
+      set (frame_reduces := E_Assign P x y z o f t H L C'' FM'' env_val
+                                     not_box_envVal L_y_o H_o_C_FM
+                                     f_in_FM L_z_envVal
+          ).
+      exists ( # (H +*+ o
+               ↦ obj C''
+               (p_FM.updatePartFunc FM'' f
+                                    (env2fm env_val not_box_envVal))),
+          (L +++ x ↦ env_val), t ! ).
+      exact frame_reduces.
+    Qed.
 
 End Progress_SF.
+

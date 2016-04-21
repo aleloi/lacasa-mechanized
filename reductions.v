@@ -117,6 +117,8 @@ Section Reductions.
 
   Notation cfg_type := (prod Heap_type FS_type).
 
+  Notation "[ L , t ] ^ a" := (ann_frame (sframe L t) a) (at level 0).
+
   Definition updFrame (F: ann_frame_type) (x: VarName_type) (envVal: env_Range_type) :
     ann_frame_type.
     destruct F.
