@@ -255,7 +255,7 @@ Section Progress.
     clear WF_F'' heap_okH heap_dom_okH X FS.
     inversion typ_F_sigma.
     inversion X.
-    clear H9 H10 H6 H8 H7 witn f0 x1 eff1 gamma0 H2 H5 H5 H4 H3 H1 H0 X0 X t tau H11.
+    clear H9 H10 H6 H8 H7 f0 x1 eff1 gamma0 H2 H5 H5 H4 H3 H1 H0 X0 X t tau H11.
     inversion X1.
     clear x0 sigma0 e eff0 gamma witn0 H5 H4 H0 H2 H1 witn f0 x1 eff1 gamma0.
     clear  X1 H12 D C X2 y0.

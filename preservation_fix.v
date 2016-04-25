@@ -56,212 +56,6 @@ Section Preservation_fix.
   Notation "( Γ , ef ⊩'' e ▷ σ )" := (TypeChecksExpr P Γ ef e σ) (at level 0).
 
   Notation "a ∉ lst" := (~ (In a lst)) (at level 0).
-    
-
-  Theorem preservation_case_box :
-    forall H L σ ann t C x o flds,
-      WF_Frame' H (ann_frame (sframe L t_let x <- Box C t_in (t)) ann) σ ->
-      Heap_okP H ->
-      ~ In o (p_heap.domain H) ->
-      fieldsP C flds ->
-      WF_Frame'
-        (p_heap.updatePartFunc H o (obj C (p_FM.newPartFunc flds FM_null)))
-        (ann_frame (sframe (p_env.updatePartFunc L x (envBox o)) t) ann) σ.
-   Admitted.
-  
-    Theorem preservation_case_select :
-    forall H L σ ann x y f t C FM fmVal o,
-      WF_Frame' H (ann_frame (sframe L t_let x <- FieldSelection y f t_in (t)) ann) σ ->
-      Heap_okP H ->
-      p_env.func L y = Some (envRef o) ->
-      p_heap.func H o = Some (obj C FM) ->
-      p_FM.func FM f = Some fmVal ->
-      WF_Frame'
-        H
-        (ann_frame (sframe (p_env.updatePartFunc L x (fm2env fmVal)) t) ann) σ.
-    intros.
-
-    (* 2 *)
-    rename H1 into t_typ_σb.
-    rename H2 into _2_cd.
-    rename H3 into _2_e.
-    rename H4 into t_is_term.
-    rename H0 into _2_j.
-    rename X into _2_k.
-
-    (* 3 *)
-    inversion _2_k.
-    clear H3 sigma0 H5 ann0 H4 H1 H2.
-    rename X into ΓL_sub.
-    rename X0 into wf_vars.
-
-
-    (* 4 *)
-    inversion ΓL_sub.
-    clear tau H3 H7 t1 H5 e H4 x0 eff0 H2.
-    rewrite <- H1 in * ; clear H1 Gamma.
-    inversion X.
-    clear H5 f0 H1 x0 eff0 H3 gamma0 H2.
-    rename C0 into D.
-    rename H7 into typ_newC.
-    rename witn into typ_next_frame.
-    set (E := ftype P D f typ_next_frame).
-    rewrite <- H4 in *.
-    fold E in X, X0.
-    clear H4.
-    (* rename H4 into _4_c. *)
-    rename X0 into _4_d.
-    rename X into _4_e.
-    set (L' := p_env.updatePartFunc L x (fm2env fmVal)).
-    clear t0 L0 H0.
-
-
-    (* 5 *)
-    set (Gamma' := p_gamma.updatePartFunc gamma x (typt_class E)).
-    fold Gamma' in _4_d.
-    
-    (* 6 *)
-    inversion wf_vars.
-    rename H0 into wf_vars_i.
-    rename X into wf_vars_ii.
-    set (_6 := subset_preserved gamma L x (typt_class E) (fm2env fmVal)  wf_vars_i).
-
-
-    (* OTHER ORDER COMPARED TO paper proof*)
-    clear H6 sigma0.
-    apply (t_frame1 P _ Gamma' eff _ _ _ _ t_is_term _4_d).
-    split.
-    apply _6.
-    intros z tau.
-
-    (* END OTHER *)
-
-    case_eq (v_eq_dec x z).
-    (* 7 *)
-    (* 7 a *)
-    intros.
-    rewrite <- e in *; clear e z.
-    clear H0.
-    assert (p_env.func L' x = Some (fm2env fmVal)) as gamma_L_subset_a.
-    unfold L'.
-    rewrite  ( proj1 (p_env.updatedFuncProp L x (fm2env fmVal) x) (eq_refl x)).
-    reflexivity.
-    
-    assert (p_gamma.func Gamma' x = Some (typt_class E)) as gamma_x_E.
-    unfold Gamma'.
-    rewrite  ( proj1 (p_gamma.updatedFuncProp gamma x (typt_class E) x) (eq_refl x)).
-    reflexivity.
-    clear H1.
-
-    (* 7 b *)
-    induction fmVal; unfold fm2env in gamma_L_subset_a.
-    
-    (* 7 b i *)
-    apply inl. apply inl.
-    exact gamma_L_subset_a.
-
-    (* 7 c *)
-    rename r into o'.
-    set (test := _2_j o C FM _2_cd f o').
-    
-    apply inl.  apply inr.
-    exists (E, o').
-    unfold Gamma'.
-    assert (subclass P C D) as C_sub_D.
-    
-    induction ( wf_vars_ii y (typt_class D) typ_newC).
-    induction a.
-    rewrite  t_typ_σb in a; discriminate a.
-    destruct b.
-    destruct x0.
-    destruct y0.
-    destruct a.
-    destruct H1.
-    rewrite t_typ_σb in H0.
-    inversion H0.
-    rewrite H4 in *.
-    rewrite typ_newC in H1.
-    inversion H1.
-    rewrite <- H5 in *.
-    clear c H5.
-    assert (heap_typeof H r x0 = C).
-    unfold heap_typeof.
-    (* TODO: rewriting *)
-    admit.
-    (* rewrite <- H4. *)
-    (* rewrite _2_cd. *)
-    (* reflexivity. *)
-    rewrite H3 in H2.
-    inversion H2.
-    exact H7.
-    destruct b.   destruct x0. 
-    destruct y0.
-    destruct a.
-    rewrite t_typ_σb in H0.
-    inversion H0.
-    
-    assert (fld P C f) as f_field_C.
-    apply (field_subclass P C D  _  typ_next_frame).
-    
-    exact C_sub_D.
-    destruct (test f_field_C _2_e).
-    clear test.
-    exists x0.
-    split.
-    exact gamma_L_subset_a.
-    split.
-    exact gamma_x_E.
-    
-    (*  *)
-    (*
-     * know: Gamma' x = E
-     * typeof(H, o') <: ftype(C, f)
-     * --------------
-     * ftype(C, f) = E
-     * --------------------- 
-     * Goal:  heapof(H, o') <: E
-     *
-     *)
-    apply classSub.
-    assert (E = heap.ftypeP P C f f_field_C).
-    unfold E.
-    unfold heap.ftypeP.
-    rewrite (unique_ftype P C f f_field_C (field_subclass P C D f f_field_C C_sub_D)).
-    rewrite <- (ftype_subclass P C D f f_field_C C_sub_D).
-    apply (unique_ftype P D f _ _).
-    rewrite <- H0 in s.
-    exact s.
-
-    (* 8 *)
-    intros.
-    clear H0.
-
-    (* 8 a b *)
-    assert (p_gamma.func gamma z = Some tau).
-    rewrite <- H1.
-    symmetry.
-    set (lem := proj2 (p_gamma.updatedFuncProp gamma x (typt_class E) z)).
-    firstorder.
-    rename H0 into _8_b.
-    assert (In z (p_gamma.domain gamma)) as _8_a.
-    apply (p_gamma.in_part_func_domain _ z tau _8_b).
-
-    (* 8 c *)
-    assert (In z (p_env.domain L)) as _8_c.
-    apply (wf_vars_i _ _8_a).
-
-    set (_8_e_i := wf_vars_ii z tau _8_b).
-    unfold WF_Var.
-
-    assert (p_env.func L z = p_env.func L' z) as _8_d.
-    set (lem := proj2 (p_env.updatedFuncProp L x (fm2env fmVal) z)).
-    symmetry. firstorder.
-    rewrite <- _8_d.
-    rewrite <- _8_b in H1.
-    rewrite H1.
-    exact _8_e_i.
-  Admitted.
-
 
     Theorem preservation_case_assign H L x y f z t C FM o σ envVal ann:
     forall witn: is_not_box envVal,
@@ -270,13 +64,17 @@ Section Preservation_fix.
       p_env.func L y = Some (envRef o) ->
       p_heap.func H o = Some (obj C FM) ->
       p_env.func L z = Some envVal ->
-      (* isTerm t -> *)
       (WF_Frame'
-         (p_heap.updatePartFunc H o
-                                (obj C (p_FM.updatePartFunc FM f (env2fm envVal witn))))
-         (ann_frame (sframe (p_env.updatePartFunc L x envVal ) t) ann) sigma) *
-      (Heap_okP (p_heap.updatePartFunc H o
-                                       (obj C (p_FM.updatePartFunc FM f (env2fm envVal witn))))
+         (p_heap.updatePartFunc
+            H o
+            (obj C (p_FM.updatePartFunc FM f (env2fm envVal witn))))
+         (ann_frame
+            (sframe (p_env.updatePartFunc L x envVal ) t) ann) σ) *
+      (Heap_okP
+         (p_heap.updatePartFunc
+            H o
+            (obj C
+                 (p_FM.updatePartFunc FM f (env2fm envVal witn))))
       ).
 
     (* 1 *)
