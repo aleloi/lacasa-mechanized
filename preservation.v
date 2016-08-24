@@ -2249,19 +2249,20 @@ Theorem preservation_case_select :
 
 
 Theorem preservation_case_assign H L x y f z t C FM o sigma envVal ann:
-    forall witn: is_not_box envVal,
-      WF_Frame' H (ann_frame (sframe L t_let x <- (FieldAssignment y f z) t_in (t)) ann) sigma ->
-      Heap_okP H ->
-      p_env.func L y = Some (envRef o) ->
-      p_heap.func H o = Some (obj C FM) ->
-      p_env.func L z = Some envVal ->
-      (WF_Frame'
-         (p_heap.updatePartFunc H o
-                                (obj C (p_FM.updatePartFunc FM f (env2fm envVal witn))))
-         (ann_frame (sframe (p_env.updatePartFunc L x envVal ) t) ann) sigma) *
-      (Heap_okP (p_heap.updatePartFunc H o
-                                       (obj C (p_FM.updatePartFunc FM f (env2fm envVal witn))))
-      ).
+  forall witn: is_not_box envVal,
+    WF_Frame' H (ann_frame (sframe L t_let x <- (FieldAssignment y f z) t_in (t)) ann) sigma ->
+    Heap_okP H ->
+    p_env.func L y = Some (envRef o) ->
+    p_heap.func H o = Some (obj C FM) ->
+    p_env.func L z = Some envVal ->
+    (WF_Frame'
+       (p_heap.updatePartFunc H o
+                              (obj C (p_FM.updatePartFunc FM f (env2fm envVal witn))))
+       (ann_frame (sframe (p_env.updatePartFunc L x envVal ) t) ann) sigma) *
+    (Heap_okP (p_heap.updatePartFunc H o
+                                     (obj C (p_FM.updatePartFunc FM f (env2fm envVal witn))))
+    ).
+  hej
   Admitted.
   
   Theorem preservation_case_assign_heap H L x y f z t C FM o sigma envVal ann:

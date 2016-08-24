@@ -77,37 +77,100 @@ Section Preservation_fix.
                  (p_FM.updatePartFunc FM f (env2fm envVal witn))))
       ).
 
-    (* 1 *)
-    intros.
-    rename H0 into _1_b.
-    rename X into _1_c.
+      
 
-    (* 2 *)
-    set (L' := (p_env.updatePartFunc L x envVal)).
-    set (FM' := (p_FM.updatePartFunc FM f (env2fm envVal witn))).
-    set (H' := (p_heap.updatePartFunc H o (obj C FM'))).
-    split.
+      (* 1 *)
+      intros.
+      rename H0 into H_ok.
+      set (letXYfInz := [L, t_let x <- (y) ∘ f ⟵ (z) t_in (t) ] ^ (ann)) in *.
+      rename X into wfHFrameSig.
 
-    (* 2b, L z = o_z or L_z = null*)
-    assert ({o_z | envVal = envRef o_z} + (envVal = envNull)) as wf_H_Γ_L.
-    case_eq envVal.
-    intros.
-    apply inr.
-    reflexivity.
-    intros.
-    apply inl.
-    exists r.
-    reflexivity.
-    intros.
-    rewrite H0 in *.
-    inversion _1_c.
-    inversion X.
-    inversion X1.
+      (* 2 *)
+      set (L' := (p_env.updatePartFunc L x envVal)).
+      set (FM' := (p_FM.updatePartFunc FM f (env2fm envVal witn))).
+      set (H' := (p_heap.updatePartFunc H o (obj C FM'))).
+      split.
+      {
 
-    (* L z = b(r), show Gamma z must be Box[D] *)
+        (* 2b, L z = o_z or L_z = null*)
+        assert ({o_z | envVal = envRef o_z} + (envVal = envNull)) as wf_H_Γ_L.
+        {
+          case_eq envVal.
+          {
+            intros.
+            apply inr.
+            reflexivity.
+          }
+          {
+            intros.
+            apply inl.
+            exists r.
+            reflexivity.
+          }
+          { (* L z = b(r) *)
+            intros.
+            clear FM' H'.
+            rewrite H0 in witn.
+            elim witn.
+          }
+        }
 
-    inversion X0.
-    set (lem := X4 z _ H23).
+        inversion wfHFrameSig.
+        rename Gamma into Γ.
+        clear H0 L0 t0 H4 H6 H7 ann0 H8 sigma H5.
+        set (letXyfz := t_let x <- (y) ∘ f ⟵ (z) t_in (t)) in *.
+        inversion X.
+        clear gamma H0.
+        clear eff0 H4.
+        clear e H7.
+        clear x0 H6.
+        clear t0 H8.
+        clear tau H5.
+        rename sigma into τ.
+        inversion X1.
+        clear gamma H4 eff0 H5 x0 H0 f0 H7 y0 H8.
+        rewrite H6 in *; clear H6 C0.
+        set (Γ' := (Γ ⊍ x ↦ τ)) in  *.
+        apply (t_frame1 _ _ Γ' eff).
+        exact X2.
+        assert (gamma_env_subset Γ' L') as Γ'subL'.
+        { (* gamma_env_subset Γ' L'*)
+          apply subset_preserved.
+          inversion X0.
+          assumption.
+        }
+        split.
+        (* If needed, prove lemmas used for both branches here. *)
+        {
+          assumption.
+        }
+        { (* Γ' x0 = σ' -> wf_var Γ' L' x0 *)
+          intros.
+          rename x0 into x'.
+          rename sigma into σ'.
+          Print WF_Var.
+          case_eq (p_env.func L' x').
+          {
+            (* x ∈ dom(L) *)
+            admit.
+          }
+          {
+            (* x ∉ dom(L) (is absurd) *)
+            Print gamma_env_subset .
+            set (lem := Γ'subL' _ (p_Γ.in_part_func_domain Γ' _ _ H0)).
+            destruct (p_env.in_part_func_domain_conv _ _ lem ).
+            intro.
+            rewrite H4 in e.
+            inversion e.
+          }
+        }
+      }
+      { (* Heap_ok H' *)
+      Print Heap_ok.
+      intro.
+      intros.
+      
+          
     inversion lem.
     destruct X5.
     rewrite e0 in H3.
