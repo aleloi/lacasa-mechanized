@@ -430,7 +430,7 @@ Section Preservation.
                      (p_heap.updatePartFunc H o
                                             (obj C (p_FM.newPartFunc flds FM_null)))
                      o o_witn) = C) as half_6_a_ii_first.
-          {    apply (heap_typeof_same P _ _ _ _ H'o). }
+          {    apply (heap_typeof_same _ _ _ _ H'o). }
     
           assert (subtypeP ( typt_class
                                (heap_typeof
@@ -594,7 +594,7 @@ Section Preservation.
                       assert (c = C0).
                       {
                         symmetry in H0.
-                        set (lem := heap_typeof_impl P _ _ _ _ H0).
+                        set (lem := heap_typeof_impl _ _ _ _ H0).
                         destruct lem.
                         rewrite H3 in _6_e_ii.
                         rewrite e1 in _6_e_ii.
@@ -602,7 +602,7 @@ Section Preservation.
                         reflexivity.
                       }
                       rewrite <- H4.
-                      apply (heap_typeof_same P _ _ _ _ H3).
+                      apply (heap_typeof_same _ _ _ _ H3).
                     }
                   }
                   (* None *)
@@ -714,7 +714,7 @@ Section Preservation.
                       assert (c = C0).
                       {
                         symmetry in H0.
-                        set (lem := heap_typeof_impl P _ _ _ _ H0).
+                        set (lem := heap_typeof_impl _ _ _ _ H0).
                         destruct lem.
                         rewrite H3 in _6_e_ii.
                         rewrite e1 in _6_e_ii.
@@ -722,7 +722,7 @@ Section Preservation.
                         reflexivity.
                       }
                       rewrite <- H4.
-                      apply (heap_typeof_same P _ _ _ _ H3).
+                      apply (heap_typeof_same _ _ _ _ H3).
                     }
                   }
                   (* None *)
@@ -789,7 +789,7 @@ Section Preservation.
                      (p_heap.updatePartFunc H o
                                             (obj C (p_FM.newPartFunc flds FM_null)))
                      o o_witn) = C) as half_6_a_ii_first.
-          {    apply (heap_typeof_same P _ _ _ _ H'o). }
+          {    apply (heap_typeof_same _ _ _ _ H'o). }
     
           assert (subtypeP ( typt_class
                                (heap_typeof
@@ -953,7 +953,7 @@ Section Preservation.
                       assert (c = C0).
                       {
                         symmetry in H0.
-                        set (lem := heap_typeof_impl P _ _ _ _ H0).
+                        set (lem := heap_typeof_impl _ _ _ _ H0).
                         destruct lem.
                         rewrite H3 in _6_e_ii.
                         rewrite e1 in _6_e_ii.
@@ -961,7 +961,7 @@ Section Preservation.
                         reflexivity.
                       }
                       rewrite <- H4.
-                      apply (heap_typeof_same P _ _ _ _ H3).
+                      apply (heap_typeof_same _ _ _ _ H3).
                     }
                   }
                   (* None *)
@@ -1073,7 +1073,7 @@ Section Preservation.
                       assert (c = C0).
                       {
                         symmetry in H0.
-                        set (lem := heap_typeof_impl P _ _ _ _ H0).
+                        set (lem := heap_typeof_impl _ _ _ _ H0).
                         destruct lem.
                         rewrite H3 in _6_e_ii.
                         rewrite e1 in _6_e_ii.
@@ -1081,7 +1081,7 @@ Section Preservation.
                         reflexivity.
                       }
                       rewrite <- H4.
-                      apply (heap_typeof_same P _ _ _ _ H3).
+                      apply (heap_typeof_same _ _ _ _ H3).
                     }
                   }
                   (* None *)
@@ -1525,10 +1525,10 @@ Section Preservation.
     fold H' in lemlem.
     clear lem H'a_is_obj f_witn C0 C''_sub_ftype FM FM_f_eq o' H3 f.
 
-    destruct (heap_typeof_impl P H o'' C'' o''_in_H (eq_refl _))
+    destruct (heap_typeof_impl H o'' C'' o''_in_H (eq_refl _))
       as [FM'' Ho''].
     rewrite Ho'' in lemlem; symmetry in lemlem.
-    apply (heap_typeof_same P _ _ _ FM''); assumption.
+    apply (heap_typeof_same _ _ _ FM''); assumption.
     rewrite H2; assumption.
     unfold heap.fieldsP.
     clear H' lem H3 obj' H1 H3.
@@ -1627,10 +1627,10 @@ Section Preservation.
     fold H' in lemlem.
     clear lem H'a_is_obj f_witn C0 C''_sub_ftype FM FM_f_eq o' H3 f.
 
-    destruct (heap_typeof_impl P H o'' C'' o''_in_H (eq_refl _))
+    destruct (heap_typeof_impl H o'' C'' o''_in_H (eq_refl _))
       as [FM'' Ho''].
     rewrite Ho'' in lemlem; symmetry in lemlem.
-    apply (heap_typeof_same P _ _ _ FM''); assumption.
+    apply (heap_typeof_same _ _ _ FM''); assumption.
     rewrite H2; assumption.
     unfold heap.fieldsP.
     clear H' lem H3 obj' H1 H3.
@@ -1719,7 +1719,7 @@ Section Preservation.
                      (p_heap.updatePartFunc H o
                                             (obj C (p_FM.newPartFunc flds FM_null)))
                      o o_witn) = C) as half_6_a_ii_first.
-          {    apply (heap_typeof_same P _ _ _ _ H'o). }
+          {    apply (heap_typeof_same _ _ _ _ H'o). }
     
           assert (subtypeP ( typt_class
                                (heap_typeof
@@ -1883,7 +1883,7 @@ Section Preservation.
                       assert (c = C0).
                       {
                         symmetry in H0.
-                        set (lem := heap_typeof_impl P _ _ _ _ H0).
+                        set (lem := heap_typeof_impl _ _ _ _ H0).
                         destruct lem.
                         rewrite H3 in _6_e_ii.
                         rewrite e1 in _6_e_ii.
@@ -1891,7 +1891,7 @@ Section Preservation.
                         reflexivity.
                       }
                       rewrite <- H4.
-                      apply (heap_typeof_same P _ _ _ _ H3).
+                      apply (heap_typeof_same _ _ _ _ H3).
                     }
                   }
                   (* None *)
@@ -2003,7 +2003,7 @@ Section Preservation.
                       assert (c = C0).
                       {
                         symmetry in H0.
-                        set (lem := heap_typeof_impl P _ _ _ _ H0).
+                        set (lem := heap_typeof_impl _ _ _ _ H0).
                         destruct lem.
                         rewrite H3 in _6_e_ii.
                         rewrite e1 in _6_e_ii.
@@ -2011,7 +2011,7 @@ Section Preservation.
                         reflexivity.
                       }
                       rewrite <- H4.
-                      apply (heap_typeof_same P _ _ _ _ H3).
+                      apply (heap_typeof_same _ _ _ _ H3).
                     }
                   }
                   (* None *)
@@ -2157,7 +2157,7 @@ Theorem preservation_case_select :
                 assert (heap_typeof H r x0 = C).
                 {
                   destruct H1.
-                  apply (heap_typeof_same P _ _ C FM _2_cd).
+                  apply (heap_typeof_same _ _ C FM _2_cd).
                 }
                 {
                   inversion s.
@@ -2262,8 +2262,7 @@ Theorem preservation_case_assign H L x y f z t C FM o sigma envVal ann:
     (Heap_okP (p_heap.updatePartFunc H o
                                      (obj C (p_FM.updatePartFunc FM f (env2fm envVal witn))))
     ).
-  hej
-  Admitted.
+Admitted.
   
   Theorem preservation_case_assign_heap H L x y f z t C FM o sigma envVal ann:
     forall witn: is_not_box envVal,

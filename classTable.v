@@ -37,7 +37,7 @@ Section MethodsAndFields.
 
   Definition fld : class -> FieldName_type -> Prop :=
     fun _ _ => classDecls P = nil.
-
+  
   Definition ftype : forall C f,
                        fld C f -> class :=
     fun C _ _ => C.
@@ -107,7 +107,10 @@ Section MethodsAndFields.
   Lemma subtype_and_subclass_lemma C' C :
     subtype (typt_class C') (typt_class C) ->
     subclass C' C.
+    intro X.
   Admitted.
+
+  Print subtype_and_subclass_lemma.
 
   Definition ocap : class -> Prop.
   Admitted.

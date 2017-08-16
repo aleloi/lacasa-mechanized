@@ -195,7 +195,7 @@ Module ConcreteNamesAndTypes <: AbstractNamesAndTypes.
       intros.
       destruct x1 as [n1]; destruct x2 as [n2].
       simplify_eq H; intro are_eq; rewrite are_eq; reflexivity.
-      
+            
       set (lem := count_occ_map unpack _var_name_eq_dec nat_eq_dec unpack_injective
                                 (_var_name_type_constr fresh_nat) lT
           ).

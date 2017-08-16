@@ -289,11 +289,11 @@ Section Progress_SF.
       split.
 
       set (C := heap_typeof H o o_in_H).
-      destruct (heap_typeof_impl P H o C o_in_H (eq_refl _))
+      destruct (heap_typeof_impl H o C o_in_H (eq_refl _))
         as [FM H_o_value].
       rewrite ooo_equal in H_o_value.
       symmetry.
-      apply (heap_typeof_same P _ _ _ FM H_o_value).
+      apply (heap_typeof_same _ _ _ FM H_o_value).
       unfold wf_env.subtypeP in bbbb.
       inversion bbbb.
       clear D H0 H2      .
@@ -308,7 +308,7 @@ Section Progress_SF.
       destruct X1 as [C heap_tpe_tmp].
       destruct heap_tpe_tmp as [typeof_o_C C_sub_C'].
       
-      destruct (heap_typeof_impl P _ _ _ o_in_H typeof_o_C) as [FM H_o_value].
+      destruct (heap_typeof_impl _ _ _ o_in_H typeof_o_C) as [FM H_o_value].
       
       apply (fun f => f o C FM ) in heap_dom_ok.
       apply (fun f => f H_o_value) in heap_dom_ok.
@@ -510,7 +510,7 @@ Section Progress_SF.
             rewrite ΓyC' in ΓyC'''; inversion ΓyC''' as [C_equal];
             destruct C_equal.
             inversion_clear subC'. rename H0 into typeof_sub_C'.
-            destruct (heap_typeof_impl P _ o
+            destruct (heap_typeof_impl _ o
                                        (heap_typeof H o o'_in_H)
                                        o'_in_H
                                        (eq_refl _ )

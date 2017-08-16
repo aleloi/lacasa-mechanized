@@ -20,44 +20,37 @@ Section Heap.
 
   Import Coq.Lists.List.
 
+  Check p_heap.in_part_func_domain_conv.
+  
   Definition heap_typeof (H: Heap_type) (o: Ref_type)
              (witn: In o (p_heap.domain H)) :
     class.
-
-    assert ({b | p_heap.func H o = Some b}) as exists_value.
-    case_eq (p_heap.func H o).
-
-    intros b _; exists b; reflexivity.
-    intro is_none; induction (proj2 (p_heap.fDomainCompat _ _) is_none witn).
-    
-    destruct exists_value.
+    set (value := (p_heap.in_part_func_domain_conv H o witn) ).
+    destruct value.
     destruct x.
     exact c.
   Defined.
-  
-  Definition test_match n :=
-    match n with
-      | O => True
-      | S _ => True
-    end.
 
-  Theorem test_match_proof n :
-    test_match n = True.
-    destruct n; reflexivity.
-  Defined.
+  Print heap_typeof.
 
-  
   Theorem heap_typeof_same (H: Heap_type) (o: Ref_type) C FM :
     p_heap.func H o = Some (obj C FM) ->
     forall witn,
       heap_typeof H o witn = C.
-    intros;
-    unfold heap_typeof;
-    destruct H;
-    unfold p_heap.func;
-    simpl in *;
-    compute.
-    admit.
+    intros.
+    unfold heap_typeof.
+    destruct (p_heap.in_part_func_domain_conv H o witn).
+    generalize e.
+    rewrite H0.
+    intro.
+
+    inversion e0.
+    rewrite <- H2 in *.
+    
+    clear P H o H0 witn e.
+    (* Aww, this is unfair! It's almost done now!*)
+    (* replace x with  (obj C FM) by apply proof_irrelevance. 
+     *)
   Admitted.
 
   Theorem heap_typeof_impl H o C :

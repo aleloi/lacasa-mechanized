@@ -166,9 +166,9 @@ Section Preservation_fix.
         }
       }
       { (* Heap_ok H' *)
-      Print Heap_ok.
-      intro.
-      intros.
+        Print Heap_ok.
+        intro.
+        intros.
       
           
     inversion lem.

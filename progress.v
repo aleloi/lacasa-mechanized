@@ -382,7 +382,7 @@ Section Progress.
     inversion s. clear C0 D H0 H1.
     rename H2 into C'_sub_C.
 
-    destruct (heap_typeof_impl P _ _ C' x0 (eq_refl _)) as [FM' H_o_eq].
+    destruct (heap_typeof_impl _ _ C' x0 (eq_refl _)) as [FM' H_o_eq].
     assert (method P C' m md) as m_meth_C.
     exact (method_subclass P C' C m md witn C'_sub_C).
     clear C  witn e0 s H6 C'_sub_C.
